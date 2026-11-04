@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión</title>
+</head>
+<body>
+
+    <h1>Iniciar sesión</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label>Usuario:</label>
+            <input type="text" name="username" required>
+        </p>
+
+        <p>
+            <label>Contraseña:</label>
+            <input type="password" name="password" required>
+        </p>
+
+        <button type="submit">
+            Ingresar
+        </button>
+    </form>
+
+</body>
+</html>
