@@ -1,11 +1,16 @@
 
-/* ===== WINTV - DISEÑO GENERAL ===== */
+/* ==========================================
+   WINTV - ESTILOS GENERALES
+   TT-03: Plantilla base
+========================================== */
+
 :root {
     --azul: #173b78;
     --azul-oscuro: #102a54;
     --azul-claro: #3178d6;
     --fondo: #f1f5fa;
     --texto: #24354b;
+    --borde: #d9e2ee;
 }
 
 * {
@@ -15,26 +20,33 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    color: var(--texto);
     background: var(--fondo);
+    color: var(--texto);
 }
 
-/* ===== ESTRUCTURA ===== */
+/* ESTRUCTURA PRINCIPAL */
+
 .app {
     display: flex;
     min-height: 100vh;
 }
 
-/* ===== MENÚ LATERAL ===== */
 .sidebar {
     width: 260px;
+    flex-shrink: 0;
     background: var(--azul-oscuro);
     color: white;
     padding: 25px 18px;
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
 }
+
+.principal {
+    flex: 1;
+    min-width: 0;
+}
+
+/* MARCA WINTV */
 
 .marca {
     display: flex;
@@ -48,8 +60,8 @@ body {
     place-items: center;
     width: 45px;
     height: 45px;
-    border-radius: 12px;
     background: var(--azul-claro);
+    border-radius: 12px;
     font-size: 25px;
     font-weight: bold;
 }
@@ -60,75 +72,89 @@ body {
 }
 
 .marca small {
+    display: block;
     color: #b9ccea;
 }
 
-/* ===== NAVEGACIÓN ===== */
+/* MENU LATERAL */
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .menu a {
     display: block;
     padding: 14px;
-    margin-bottom: 9px;
+    border-radius: 9px;
     color: white;
     text-decoration: none;
-    border-radius: 9px;
+    font-weight: 500;
     transition: background 0.2s;
 }
 
-.menu a:hover {
+.menu a:hover,
+.menu a:focus-visible {
     background: #28518a;
 }
 
 .sidebar-pie {
     margin-top: auto;
+    padding-top: 30px;
     font-size: 12px;
     color: #a9bbd4;
 }
 
-/* ===== CONTENIDO ===== */
-.principal {
-    min-width: 0;
-    flex: 1;
-}
+/* BARRA SUPERIOR */
 
 .barra-superior {
-    background: white;
-    padding: 23px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
+    padding: 23px 30px;
+    background: white;
     box-shadow: 0 2px 8px #102a5410;
+}
+
+.barra-superior strong {
+    color: var(--azul-oscuro);
 }
 
 .barra-superior span {
     display: block;
-    color: #718198;
     margin-top: 5px;
+    color: #718198;
     font-size: 13px;
 }
+
+.usuario {
+    white-space: nowrap;
+}
+
+/* CONTENIDO */
 
 .contenido {
     padding: 30px;
 }
 
-/* ===== TARJETAS ===== */
 .tarjeta {
     background: white;
-    padding: 26px;
     border-radius: 14px;
-    box-shadow: 0 4px 16px #102a5410;
+    padding: 26px;
     margin-bottom: 20px;
+    box-shadow: 0 4px 16px #102a5410;
 }
 
-/* ===== BOTONES ===== */
 .btn {
     display: inline-block;
     padding: 12px 20px;
     background: var(--azul);
     color: white;
-    border: 0;
-    border-radius: 8px;
     text-decoration: none;
+    border-radius: 8px;
+    border: none;
     cursor: pointer;
 }
 
@@ -136,15 +162,163 @@ body {
     background: var(--azul-claro);
 }
 
-/* ===== MENSAJES ===== */
+/* MENSAJES */
+
 .mensaje {
-    background: #e1f4e8;
     padding: 15px;
-    border-radius: 8px;
     margin-bottom: 20px;
+    border-radius: 8px;
+    background: #e1f4e8;
+    color: #166534;
 }
 
-/* ===== ADAPTACIÓN A MÓVILES ===== */
+/* ==========================================
+   REGISTRO DE CLIENTES
+========================================== */
+
+.wintv-cliente-registro {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+/* CABECERA */
+
+.wintv-cliente-cabecera {
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.wintv-cliente-cabecera h1 {
+    margin: 0 0 12px;
+    color: var(--azul);
+    font-size: 30px;
+}
+
+.wintv-cliente-cabecera p,
+.wintv-cliente-descripcion {
+    color: #697586;
+    line-height: 1.6;
+}
+
+/* PESTAÑAS */
+
+.wintv-cliente-navegacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.wintv-cliente-pestana {
+    display: inline-block;
+    padding: 13px 20px;
+    background: #edf2fa;
+    color: var(--azul);
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-cliente-pestana:hover {
+    background: #dbe6f5;
+}
+
+.wintv-cliente-pestana.activa {
+    background: var(--azul);
+    color: white;
+}
+
+/* FORMULARIO */
+
+.wintv-cliente-seccion h2 {
+    margin-bottom: 10px;
+    color: var(--azul);
+}
+
+.wintv-cliente-descripcion {
+    margin-bottom: 25px;
+}
+
+.wintv-cliente-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.wintv-cliente-campo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 7px;
+}
+
+.wintv-cliente-campo label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wintv-cliente-campo input,
+.wintv-cliente-campo select,
+.wintv-cliente-campo textarea {
+    display: block;
+    width: 100%;
+    min-height: 45px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: white;
+    color: var(--texto);
+    font: inherit;
+}
+
+.wintv-cliente-campo input:focus,
+.wintv-cliente-campo select:focus,
+.wintv-cliente-campo textarea:focus {
+    outline: 2px solid #a8c5f0;
+    border-color: var(--azul-claro);
+}
+
+.wintv-cliente-ayuda {
+    color: #697586;
+    font-size: 12px;
+}
+
+.wintv-cliente-errores {
+    color: #b42318;
+    font-size: 13px;
+}
+
+/* BOTON GUARDAR */
+
+.wintv-cliente-acciones {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.wintv-cliente-boton {
+    padding: 14px 26px;
+    color: white;
+    background: var(--azul);
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wintv-cliente-boton:hover {
+    background: var(--azul-claro);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
 @media (max-width: 768px) {
     .app {
         display: block;
@@ -152,16 +326,20 @@ body {
 
     .sidebar {
         width: 100%;
+        padding: 20px;
+    }
+
+    .marca {
+        margin-bottom: 20px;
     }
 
     .menu {
-        display: flex;
+        flex-direction: row;
         flex-wrap: wrap;
-        gap: 6px;
     }
 
     .menu a {
-        margin: 0;
+        padding: 10px 12px;
     }
 
     .barra-superior {
@@ -171,4 +349,224 @@ body {
     .contenido {
         padding: 15px;
     }
+
+    .wintv-cliente-registro {
+        padding: 20px;
+    }
+
+    .wintv-cliente-campos {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-cliente-cabecera h1 {
+        font-size: 24px;
+    }
+
+    .wintv-cliente-boton {
+        width: 100%;
+    }
+}
+
+
+/* ==================================
+   WINTV - ROLES DEL USUARIO
+================================== */
+
+.roles-usuario {
+    margin-top: 25px;
+    padding: 15px 12px;
+    border-top: 1px solid #ffffff25;
+}
+
+.roles-usuario small {
+    display: block;
+    color: #a9bbd4;
+    font-size: 12px;
+}
+
+.roles-usuario p {
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 8px 0 0;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================
+   WINTV - BUSQUEDA DE CLIENTES
+   TT-03: INTERFAZ
+========================================= */
+
+/* SECCION DE BUSQUEDA */
+
+.wintv-busqueda-seccion {
+    margin-bottom: 35px;
+}
+
+.wintv-busqueda-seccion h2 {
+    color: #173b78;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+/* FORMULARIO DE BUSQUEDA */
+
+.contenido .wintv-busqueda-form {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.contenido .wintv-busqueda-form input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 13px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: white;
+    color: #24354b;
+    font-size: 15px;
+}
+
+.contenido .wintv-busqueda-form input:focus {
+    outline: 2px solid #a8c5f0;
+    border-color: #3178d6;
+}
+
+/* BOTON BUSCAR */
+
+.contenido .wintv-busqueda-boton {
+    padding: 13px 25px;
+    min-height: 48px;
+    background: #173b78;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.contenido .wintv-busqueda-boton:hover {
+    background: #3178d6;
+}
+
+/* ENCABEZADO DE RESULTADOS */
+
+.wintv-busqueda-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.wintv-busqueda-encabezado h2 {
+    margin: 0;
+    color: #173b78;
+    font-size: 22px;
+}
+
+.wintv-busqueda-info {
+    padding: 8px 13px;
+    background: #edf2fa;
+    color: #173b78;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* TABLA DE RESULTADOS */
+
+.wintv-busqueda-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf1;
+    border-radius: 12px;
+}
+
+.contenido .wintv-busqueda-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.contenido .wintv-busqueda-tabla th {
+    padding: 17px;
+    background: #173b78;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.contenido .wintv-busqueda-tabla td {
+    padding: 16px;
+    border-bottom: 1px solid #e5eaf1;
+    color: #24354b;
+    font-size: 14px;
+}
+
+.wintv-busqueda-tabla tbody tr:hover td {
+    background: #f3f7fc;
+}
+
+.wintv-busqueda-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.wintv-cliente-nombre {
+    font-weight: 600;
+    color: #173b78;
+}
+
+/* SIN RESULTADOS */
+
+.wintv-sin-resultados {
+    padding: 40px 20px !important;
+    text-align: center !important;
+}
+
+.wintv-sin-resultados-icono {
+    font-size: 30px;
+    margin-bottom: 12px;
+}
+
+.wintv-sin-resultados strong {
+    display: block;
+    color: #173b78;
+    font-size: 17px;
+}
+
+.wintv-sin-resultados p {
+    margin-top: 9px;
+    color: #697586;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .contenido .wintv-busqueda-form {
+        flex-direction: column;
+    }
+
+    .contenido .wintv-busqueda-boton {
+        width: 100%;
+    }
+
+    .wintv-busqueda-tabla {
+        min-width: 650px;
+    }
+
+    .wintv-busqueda-encabezado {
+        align-items: flex-start;
+    }
+
 }
