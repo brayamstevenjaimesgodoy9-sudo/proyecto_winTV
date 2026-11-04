@@ -1,26 +1,67 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Crear usuario</title>
-</head>
-<body>
 
-    <h1>Crear usuario</h1>
+{% extends "base.html" %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+{% block titulo %}Crear usuario | WinTV{% endblock %}
 
-    <form method="post">
+{% block contenido %}
+
+<section class="tarjeta wintv-crear-panel">
+
+    <!-- ENCABEZADO -->
+    <header class="wintv-crear-cabecera">
+        <div>
+            <h1>Crear nuevo usuario</h1>
+            <p>
+                Registra nuevos usuarios en el sistema
+                de gestión comercial WinTV.
+            </p>
+        </div>
+
+        <a href="{% url 'listar_usuarios' %}"
+           class="wintv-crear-volver">
+            ← Volver a usuarios
+        </a>
+    </header>
+
+    <!-- INFORMACION -->
+    <div class="wintv-crear-presentacion">
+        <div class="wintv-crear-icono">
+            👤
+        </div>
+
+        <div>
+            <h2>Información del nuevo usuario</h2>
+            <p>
+                Completa los datos correspondientes
+                para crear una cuenta en WinTV.
+            </p>
+        </div>
+    </div>
+
+    <!-- FORMULARIO ORIGINAL DE DJANGO -->
+    <form method="post" class="wintv-crear-form">
+
         {% csrf_token %}
 
         {{ form.as_p }}
 
-        <button type="submit">Guardar usuario</button>
+        <!-- ACCIONES -->
+        <div class="wintv-crear-acciones">
+
+            <a href="{% url 'listar_usuarios' %}"
+               class="wintv-crear-cancelar">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="wintv-crear-guardar">
+                Guardar usuario
+            </button>
+
+        </div>
+
     </form>
 
-</body>
-</html>
+</section>
+
+{% endblock %}
