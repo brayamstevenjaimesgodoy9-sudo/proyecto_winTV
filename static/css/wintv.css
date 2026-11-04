@@ -1,0 +1,174 @@
+
+/* ===== WINTV - DISEÑO GENERAL ===== */
+:root {
+    --azul: #173b78;
+    --azul-oscuro: #102a54;
+    --azul-claro: #3178d6;
+    --fondo: #f1f5fa;
+    --texto: #24354b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: var(--texto);
+    background: var(--fondo);
+}
+
+/* ===== ESTRUCTURA ===== */
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== MENÚ LATERAL ===== */
+.sidebar {
+    width: 260px;
+    background: var(--azul-oscuro);
+    color: white;
+    padding: 25px 18px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.marca-icono {
+    display: grid;
+    place-items: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: var(--azul-claro);
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.marca strong {
+    display: block;
+    font-size: 23px;
+}
+
+.marca small {
+    color: #b9ccea;
+}
+
+/* ===== NAVEGACIÓN ===== */
+.menu a {
+    display: block;
+    padding: 14px;
+    margin-bottom: 9px;
+    color: white;
+    text-decoration: none;
+    border-radius: 9px;
+    transition: background 0.2s;
+}
+
+.menu a:hover {
+    background: #28518a;
+}
+
+.sidebar-pie {
+    margin-top: auto;
+    font-size: 12px;
+    color: #a9bbd4;
+}
+
+/* ===== CONTENIDO ===== */
+.principal {
+    min-width: 0;
+    flex: 1;
+}
+
+.barra-superior {
+    background: white;
+    padding: 23px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    box-shadow: 0 2px 8px #102a5410;
+}
+
+.barra-superior span {
+    display: block;
+    color: #718198;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
+.contenido {
+    padding: 30px;
+}
+
+/* ===== TARJETAS ===== */
+.tarjeta {
+    background: white;
+    padding: 26px;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px #102a5410;
+    margin-bottom: 20px;
+}
+
+/* ===== BOTONES ===== */
+.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background: var(--azul);
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--azul-claro);
+}
+
+/* ===== MENSAJES ===== */
+.mensaje {
+    background: #e1f4e8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* ===== ADAPTACIÓN A MÓVILES ===== */
+@media (max-width: 768px) {
+    .app {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .menu {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .menu a {
+        margin: 0;
+    }
+
+    .barra-superior {
+        padding: 18px;
+    }
+
+    .contenido {
+        padding: 15px;
+    }
+}

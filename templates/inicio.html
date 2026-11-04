@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Inicio | WinTV{% endblock %}
+
+{% block contenido %}
+<div class="tarjeta">
+    <h1>Bienvenido a WinTV</h1>
+    <p>Sistema de gestión comercial y administrativa.</p>
+    <p>
+        Selecciona una opción del menú para comenzar.
+    </p>
+</div>
+
+<div class="tarjeta">
+    <h2>Gestión de clientes</h2>
+    <p>Administra los registros de clientes de WinTV.</p>
+
+    <a class="btn" href="/clientes/registrar/">
+        Registrar cliente
+    </a>
+
+    <a class="btn" href="/clientes/buscar/">
+        Buscar clientes
+    </a>
+</div>
+{% endblock %}
