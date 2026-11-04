@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>Registrar cliente | WinTV</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #263449;
+        }
+
+        .contenedor {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 32px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 5px 24px #172b4d12;
+        }
+
+        .encabezado {
+            border-bottom: 1px solid #e5eaf1;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            color: #193b70;
+        }
+
+        .subtitulo {
+            color: #697586;
+            margin: 0;
+        }
+
+        .navegacion {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .pestana {
+            padding: 12px 18px;
+            text-decoration: none;
+            color: #193b70;
+            background: #edf2fa;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .pestana:hover {
+            background: #dbe6f5;
+        }
+
+        .pestana.activa,
+        .pestana.activa:hover {
+            background: #193b70;
+            color: white;
+        }
+
+        .campos {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .campo label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .campo input,
+        .campo select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .campo input:focus,
+        .campo select:focus {
+            outline: 2px solid #a8c5f0;
+            border-color: #3974bc;
+        }
+
+        .ayuda {
+            color: #697586;
+            font-size: 12px;
+        }
+
+        .errores {
+            color: #b42318;
+            font-size: 13px;
+        }
+
+        .mensaje {
+            padding: 12px;
+            margin-bottom: 18px;
+            background: #e7f6ec;
+            color: #166534;
+            border-radius: 8px;
+        }
+
+        .acciones {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .boton {
+            padding: 13px 25px;
+            background: #193b70;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .boton:hover {
+            background: #28559a;
+        }
+
+        @media (max-width: 650px) {
+            .contenedor {
+                margin: 12px;
+                padding: 20px;
+            }
+
+            .campos {
+                grid-template-columns: 1fr;
+            }
+
+            .navegacion {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="contenedor">
+
+        <header class="encabezado">
+            <h1>Gestión de clientes</h1>
+            <p class="subtitulo">
+                Registra y consulta clientes de manera rápida y sencilla.
+            </p>
+        </header>
+
+        <!-- NAVEGACIÓN ENTRE REGISTRO Y BÚSQUEDA -->
+        <nav class="navegacion">
+            <a class="pestana activa"
+               href="{% url 'clientes:registrar' %}"
+               aria-current="page">
+                Registrar cliente
+            </a>
+
+            <a class="pestana"
+               href="{% url 'clientes:buscar' %}">
+                Buscar clientes
+            </a>
+        </nav>
+
+        <!-- MENSAJES DE CONFIRMACIÓN -->
+        {% for mensaje in messages %}
+            <div class="mensaje">
+                {{ mensaje }}
+            </div>
+        {% endfor %}
+
+        <h2>Datos del nuevo cliente</h2>
+
+        <!-- FORMULARIO DE REGISTRO -->
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            {% if formulario.non_field_errors %}
+                <div class="errores">
+                    {{ formulario.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="campos">
+                {% for campo in formulario %}
+                    <div class="campo">
+
+                        <label for="{{ campo.id_for_label }}">
+                            {{ campo.label }}
+                        </label>
+
+                        {{ campo }}
+
+                        {% if campo.help_text %}
+                            <small class="ayuda">
+                                {{ campo.help_text }}
+                            </small>
+                        {% endif %}
+
+                        {% if campo.errors %}
+                            <div class="errores">
+                                {{ campo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="acciones">
+                <button type="submit" class="boton">
+                    Guardar cliente
+                </button>
+            </div>
+        </form>
+
+    </main>
+
+    <!-- MOSTRAR CAMPOS SEGÚN EL TIPO DE DOCUMENTO -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tipoDocumento =
+                document.getElementById("id_tipo_documento");
+
+            const nombres =
+                document.getElementById("id_nombres");
+
+            const apellidos =
+                document.getElementById("id_apellidos");
+
+            const razonSocial =
+                document.getElementById("id_razon_social");
+
+            if (!tipoDocumento || !nombres ||
+                !apellidos || !razonSocial) {
+                return;
+            }
+
+            const campoNombres = nombres.closest(".campo");
+            const campoApellidos = apellidos.closest(".campo");
+            const campoRazonSocial =
+                razonSocial.closest(".campo");
+
+            function actualizarCampos() {
+                const esEmpresa =
+                    tipoDocumento.value === "RUC";
+
+                campoNombres.style.display =
+                    esEmpresa ? "none" : "";
+
+                campoApellidos.style.display =
+                    esEmpresa ? "none" : "";
+
+                campoRazonSocial.style.display =
+                    esEmpresa ? "" : "none";
+
+                nombres.disabled = esEmpresa;
+                apellidos.disabled = esEmpresa;
+                razonSocial.disabled = !esEmpresa;
+            }
+
+            tipoDocumento.addEventListener(
+                "change",
+                actualizarCampos
+            );
+
+            actualizarCampos();
+        });
+    </script>
+
+</body>
+</html>
+
+
