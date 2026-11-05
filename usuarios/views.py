@@ -4,8 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import UsuarioForm, UsuarioEditarForm
 
@@ -144,8 +145,12 @@ def editar_usuario(request, usuario_id):
         }
     )
 
-
 def iniciar_sesion(request):
+    siguiente = request.POST.get('next') or request.GET.get('next')
+
+    if siguiente in ('None', 'null', ''):
+        siguiente = None
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -159,11 +164,23 @@ def iniciar_sesion(request):
         if usuario is not None:
             login(request, usuario)
 
+            if siguiente and url_has_allowed_host_and_scheme(
+                url=siguiente,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                return HttpResponseRedirect(siguiente)
+
             if es_administrador(usuario):
                 return redirect('listar_usuarios')
 
+            if usuario.is_superuser or usuario.groups.filter(
+                name__in=["VENDEDOR", "CAJA"]
+            ).exists():
+                return redirect('servicios:contrato_lista')
+
             return HttpResponseForbidden(
-                'Acceso denegado. Tu usuario no tiene permisos de ADMINISTRADOR.'
+                "Tu usuario no tiene una página de inicio asignada."
             )
 
         messages.error(
@@ -173,7 +190,8 @@ def iniciar_sesion(request):
 
     return render(
         request,
-        'usuarios/login.html'
+        'usuarios/login.html',
+        {'next': siguiente}
     )
 
 

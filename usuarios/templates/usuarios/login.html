@@ -91,6 +91,7 @@
                   class="wintv-login-form">
 
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
 
                 <!-- USUARIO -->
                 <div class="wintv-login-campo">
