@@ -5,9 +5,11 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     # Página principal de WinTV
-    path('', TemplateView.as_view(
-        template_name='inicio.html'
-    ), name='inicio'),
+    path(
+        '',
+        TemplateView.as_view(template_name='inicio.html'),
+        name='inicio'
+    ),
 
     # Administración
     path('admin/', admin.site.urls),
@@ -17,4 +19,7 @@ urlpatterns = [
 
     # Gestión de usuarios
     path('usuarios/', include('usuarios.urls')),
+
+    # Gestión de servicios y contratos
+    path('servicios/', include('servicios.urls')),
 ]
