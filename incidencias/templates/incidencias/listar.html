@@ -1,0 +1,125 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Lista de incidencias | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Gestión de incidencias</h1>
+            <p>
+                Consulta las averías reportadas
+                por los clientes de WinTV.
+            </p>
+        </div>
+
+        <a href="{% url 'incidencias:registrar' %}"
+           class="wintv-inc-guardar">
+            + Nueva incidencia
+        </a>
+    </header>
+
+    <div class="wintv-inc-informacion">
+        <h2>Incidencias registradas</h2>
+        <p>
+            Historial de reportes almacenados
+            en Oracle.
+        </p>
+    </div>
+
+    <div class="wintv-inc-tabla-contenedor">
+        <table class="wintv-inc-tabla">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Contrato</th>
+                    <th>Tipo de avería</th>
+                    <th>Fecha</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for incidencia in pagina %}
+
+                <tr>
+                    <td>
+                        #{{ incidencia.id_incidencia }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.id_cliente }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.id_contrato }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.tipo_averia.nombre }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.fecha_reporte|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td>
+                        <span class="wintv-inc-prioridad">
+                            {{ incidencia.prioridad }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="wintv-inc-estado">
+                            {{ incidencia.estado }}
+                        </span>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7"
+                        class="wintv-inc-vacio">
+                        No existen incidencias registradas.
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    <div class="wintv-inc-paginacion">
+
+        {% if pagina.has_previous %}
+            <a href="?page={{ pagina.previous_page_number }}">
+                ← Anterior
+            </a>
+        {% endif %}
+
+        <span>
+            Página {{ pagina.number }}
+            de {{ pagina.paginator.num_pages }}
+        </span>
+
+        {% if pagina.has_next %}
+            <a href="?page={{ pagina.next_page_number }}">
+                Siguiente →
+            </a>
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}
