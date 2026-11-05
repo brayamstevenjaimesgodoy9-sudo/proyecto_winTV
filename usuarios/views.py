@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils.http import url_has_allowed_host_and_scheme
 
@@ -169,7 +169,7 @@ def iniciar_sesion(request):
                 allowed_hosts={request.get_host()},
                 require_https=request.is_secure()
             ):
-                return redirect(siguiente)
+                return HttpResponseRedirect(siguiente)
 
             if es_administrador(usuario):
                 return redirect('listar_usuarios')
