@@ -1921,3 +1921,73 @@ body.wintv-login-body {
 .wintv-inc-paginacion a:hover {
     background: #d7e6ff;
 }
+
+
+/* ==========================================
+   HU-14: FILTROS DE INCIDENCIAS
+========================================== */
+
+.wintv-inc-filtros {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+}
+
+.wintv-inc-filtro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 230px;
+    max-width: 380px;
+}
+
+.wintv-inc-filtro-campo label {
+    font-weight: 600;
+    color: #102a53;
+}
+
+.wintv-inc-filtro-campo select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    font-size: 15px;
+}
+
+.wintv-inc-btn-filtrar {
+    padding: 12px 24px;
+    background: #193b73;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.wintv-inc-btn-filtrar:hover {
+    background: #28559a;
+}
+
+.wintv-inc-btn-limpiar {
+    padding: 12px 20px;
+    color: #193b73;
+    background: #edf2fa;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-inc-btn-limpiar:hover {
+    background: #dce7f8;
+}
+
+@media (max-width: 768px) {
+    .wintv-inc-filtro-campo {
+        max-width: none;
+        flex-basis: 100%;
+    }
+}
