@@ -162,10 +162,12 @@ def iniciar_sesion(request):
             if es_administrador(usuario):
                 return redirect('listar_usuarios')
 
-            return HttpResponseForbidden(
-                'Acceso denegado. Tu usuario no tiene permisos de ADMINISTRADOR.'
-            )
+            if usuario.groups.filter(name='ALMACEN').exists():
+                return redirect('inicio_almacen')
 
+            return HttpResponseForbidden(
+                'Acceso denegado. Tu usuario no tiene permisos.'
+    )
         messages.error(
             request,
             'Usuario o contraseña incorrectos.'

@@ -38,6 +38,7 @@ INSTALLED_APPS = ['usuarios',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'clientes',
+    'almacen',
 ]
 
 MIDDLEWARE = [
@@ -77,8 +78,8 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'localhost:1521/XEPDB1',
-        'USER': 'WINTV_DJANGO',
+        'NAME': os.environ.get('WINTV_DB_NAME', 'localhost:1521/freepdb1'),
+        'USER': os.environ.get('WINTV_DB_USER', 'WINTV_USER'),
         'PASSWORD': os.environ.get('WINTV_DB_PASSWORD', ''),
     }
 }
