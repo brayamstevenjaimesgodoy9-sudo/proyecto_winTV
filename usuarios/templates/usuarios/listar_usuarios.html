@@ -1,87 +1,208 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de usuarios</title>
-</head>
-<body>
 
-    <h1>Lista de usuarios</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="{% url 'logout' %}">
+{% block titulo %}Lista de usuarios | WinTV{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-usuarios-panel">
+
+    <!-- ENCABEZADO -->
+    <header class="wintv-usuarios-cabecera">
+
+        <div>
+            <h1>Gestión de usuarios</h1>
+
+            <p>
+                Administra los usuarios registrados,
+                sus roles y estados dentro de WinTV.
+            </p>
+        </div>
+
+        <a href="{% url 'logout' %}"
+           class="wintv-usuarios-salir">
             Cerrar sesión
         </a>
-    </p>
 
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+    </header>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Usuario</th>
-                <th>Nombres</th>
-                <th>Apellidos</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
+    <!-- TITULO DE LA TABLA -->
+    <div class="wintv-usuarios-seccion">
 
-        <tbody>
-            {% for usuario in usuarios %}
-                <tr>
-                    <td>{{ usuario.username }}</td>
-                    <td>{{ usuario.first_name }}</td>
-                    <td>{{ usuario.last_name }}</td>
-                    <td>{{ usuario.email }}</td>
+        <div class="wintv-usuarios-titulo">
+            <div>
+                <h2>Lista de usuarios</h2>
+                <p>
+                    Consulta la información y los
+                    permisos de cada usuario.
+                </p>
+            </div>
 
-                    <td>
-                        {% for grupo in usuario.groups.all %}
-                            {{ grupo.name }}
-                        {% empty %}
-                            Sin rol
-                        {% endfor %}
-                    </td>
+            <span class="wintv-usuarios-etiqueta">
+                Usuarios registrados
+            </span>
+        </div>
 
-                    <td>
-                        {% if usuario.is_active %}
-                            Activo
-                        {% else %}
-                            Inactivo
-                        {% endif %}
-                    </td>
+        <!-- TABLA RESPONSIVE -->
+        <div class="wintv-usuarios-tabla-contenedor"
+             role="region"
+             aria-label="Tabla de usuarios"
+             tabindex="0">
 
-                    <td>
-                        <a href="{% url 'editar_usuario' usuario.id %}">
-                            Editar
-                        </a>
+            <table class="wintv-usuarios-tabla">
 
-                        |
+                <thead>
+                    <tr>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Nombres</th>
+                        <th scope="col">Apellidos</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
 
-                        {% if usuario.is_active %}
-                            <a href="{% url 'desactivar_usuario' usuario.id %}">
-                                Desactivar
-                            </a>
-                        {% else %}
-                            <a href="{% url 'activar_usuario' usuario.id %}">
-                                Activar
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="7">No hay usuarios registrados.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <tbody>
 
-</body>
-</html>
+                    {% for usuario in usuarios %}
+
+                    <tr>
+
+                        <!-- NOMBRE DE USUARIO -->
+                        <td>
+                            <div class="wintv-usuarios-identidad">
+
+                                <span class="wintv-usuarios-avatar">
+                                    {{ usuario.username|slice:":1"|upper }}
+                                </span>
+
+                                <strong>
+                                    {{ usuario.username }}
+                                </strong>
+
+                            </div>
+                        </td>
+
+                        <!-- NOMBRES -->
+                        <td>
+                            {{ usuario.first_name|default:"—" }}
+                        </td>
+
+                        <!-- APELLIDOS -->
+                        <td>
+                            {{ usuario.last_name|default:"—" }}
+                        </td>
+
+                        <!-- CORREO -->
+                        <td class="wintv-usuarios-correo">
+                            {{ usuario.email|default:"—" }}
+                        </td>
+
+                        <!-- ROLES -->
+                        <td>
+                            <div class="wintv-usuarios-roles">
+
+                                {% for grupo in usuario.groups.all %}
+
+                                    <span class="wintv-usuarios-rol">
+                                        {{ grupo.name }}
+                                    </span>
+
+                                {% empty %}
+
+                                    <span class="wintv-usuarios-sinrol">
+                                        Sin rol
+                                    </span>
+
+                                {% endfor %}
+
+                            </div>
+                        </td>
+
+                        <!-- ESTADO -->
+                        <td>
+
+                            {% if usuario.is_active %}
+
+                                <span class="wintv-usuarios-estado activo">
+                                    ● Activo
+                                </span>
+
+                            {% else %}
+
+                                <span class="wintv-usuarios-estado inactivo">
+                                    ● Inactivo
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ACCIONES -->
+                        <td>
+
+                            <div class="wintv-usuarios-acciones">
+
+                                <a href="{% url 'editar_usuario' usuario.id %}"
+                                   class="wintv-usuarios-editar">
+                                    Editar
+                                </a>
+
+                                {% if usuario.is_active %}
+
+                                    <a href="{% url 'desactivar_usuario' usuario.id %}"
+                                       class="wintv-usuarios-desactivar">
+                                        Desactivar
+                                    </a>
+
+                                {% else %}
+
+                                    <a href="{% url 'activar_usuario' usuario.id %}"
+                                       class="wintv-usuarios-activar">
+                                        Activar
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="7"
+                            class="wintv-usuarios-vacio">
+
+                            <div class="wintv-usuarios-vacio-icono">
+                                👥
+                            </div>
+
+                            <strong>
+                                No hay usuarios registrados
+                            </strong>
+
+                            <p>
+                                Los usuarios aparecerán
+                                aquí cuando sean creados.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,36 +1,158 @@
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar sesión</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión | WinTV</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/wintv.css' %}">
 </head>
-<body>
 
-    <h1>Iniciar sesión</h1>
+<body class="wintv-login-body">
 
-    {% if messages %}
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+    <main class="wintv-login-contenedor">
 
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next }}">
-        <p>
-            <label>Usuario:</label>
-            <input type="text" name="username" required>
-        </p>
+        <!-- PANEL INFORMATIVO -->
+        <section class="wintv-login-presentacion">
 
-        <p>
-            <label>Contraseña:</label>
-            <input type="password" name="password" required>
-        </p>
+<div class="wintv-login-logo">
+    <img
+        src="{% static 'img/logo_wintv.png' %}"
+        alt="Logo oficial de WinTV"
+        class="wintv-login-logo-img"
+    >
+</div>
 
-        <button type="submit">
-            Ingresar
-        </button>
-    </form>
+
+            <h1>Bienvenido a WinTV</h1>
+
+            <p>
+                Sistema de gestión comercial
+                y administrativa.
+            </p>
+
+            <div class="wintv-login-descripcion">
+                <h2>Gestiona tu trabajo</h2>
+
+                <p>
+                    Accede a las herramientas
+                    de gestión de usuarios,
+                    clientes y demás módulos
+                    autorizados de WinTV.
+                </p>
+            </div>
+
+            <div class="wintv-login-pie">
+                WinTV - Sistema de gestión
+            </div>
+
+        </section>
+
+        <!-- FORMULARIO -->
+        <section class="wintv-login-panel">
+
+            <div class="wintv-login-encabezado">
+
+                <span class="wintv-login-etiqueta">
+                    ACCESO AL SISTEMA
+                </span>
+
+                <h2>Iniciar sesión</h2>
+
+                <p>
+                    Ingresa tus credenciales
+                    para acceder a WinTV.
+                </p>
+
+            </div>
+
+            <!-- MENSAJES DE DJANGO -->
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="wintv-login-mensaje"
+                         role="status">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+            <!-- FORMULARIO ORIGINAL -->
+            <form method="post"
+                  class="wintv-login-form">
+
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <!-- USUARIO -->
+                <div class="wintv-login-campo">
+
+                    <label for="id_username">
+                        Usuario
+                    </label>
+
+                    <input
+                        type="text"
+                        id="id_username"
+                        name="username"
+                        placeholder="Ingresa tu usuario"
+                        autocomplete="username"
+                        maxlength="150"
+                        required
+                        autofocus
+                    >
+
+                </div>
+
+                <!-- CONTRASEÑA -->
+                <div class="wintv-login-campo">
+
+                    <label for="id_password">
+                        Contraseña
+                    </label>
+
+                    <input
+                        type="password"
+                        id="id_password"
+                        name="password"
+                        placeholder="Ingresa tu contraseña"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+                <!-- ENVIAR -->
+                <button type="submit"
+                        class="wintv-login-boton">
+
+                    Ingresar a WinTV
+
+                </button>
+
+            </form>
+
+            <div class="wintv-login-seguridad">
+                <span>🔒</span>
+
+                <p>
+                    Acceso exclusivo para usuarios
+                    autorizados del sistema.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
 
 </body>
 </html>
