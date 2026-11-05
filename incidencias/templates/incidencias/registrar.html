@@ -1,0 +1,82 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Registrar incidencia | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Registrar incidencia</h1>
+            <p>
+                Sistema de registro y clasificación
+                de averías de WinTV.
+            </p>
+        </div>
+        <span class="wintv-inc-etiqueta">HU-13</span>
+    </header>
+
+    <div class="wintv-inc-informacion">
+        <h2>Datos de la incidencia</h2>
+        <p>
+            Completa la información del cliente
+            y del problema reportado.
+        </p>
+    </div>
+
+    <form method="post" class="wintv-inc-form">
+        {% csrf_token %}
+
+        {% if formulario.non_field_errors %}
+            <div class="wintv-inc-errores">
+                {{ formulario.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="wintv-inc-grid">
+
+            {% for campo in formulario %}
+                <div class="wintv-inc-campo
+                    {% if campo.name == 'descripcion' %}
+                        wintv-inc-completo
+                    {% endif %}">
+
+                    <label for="{{ campo.id_for_label }}">
+                        {{ campo.label }}
+                    </label>
+
+                    {{ campo }}
+
+                    {% if campo.errors %}
+                        <div class="wintv-inc-errores">
+                            {{ campo.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="wintv-inc-acciones">
+
+            <a href="/" class="wintv-inc-cancelar">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="wintv-inc-guardar">
+                Guardar incidencia
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

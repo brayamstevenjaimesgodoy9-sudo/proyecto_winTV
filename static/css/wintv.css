@@ -1693,3 +1693,231 @@ body.wintv-login-body {
         height: 58px;
     }
 }
+
+
+/* =====================================
+   WINTV - HU-13 REGISTRAR INCIDENCIAS
+===================================== */
+
+.wintv-inc-panel {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 36px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(20, 50, 90, .06);
+}
+
+.wintv-inc-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wintv-inc-cabecera h1 {
+    margin: 0 0 12px;
+    color: #193b70;
+    font-size: 30px;
+}
+
+.wintv-inc-cabecera p,
+.wintv-inc-informacion p {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.wintv-inc-etiqueta {
+    background: #eaf1ff;
+    color: #193b70;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-weight: bold;
+}
+
+.wintv-inc-informacion {
+    margin: 28px 0;
+}
+
+.wintv-inc-informacion h2 {
+    color: #193b70;
+}
+
+.wintv-inc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.wintv-inc-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.wintv-inc-campo label {
+    color: #122c52;
+    font-weight: 600;
+}
+
+.wintv-inc-campo input,
+.wintv-inc-campo select,
+.wintv-inc-campo textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font: inherit;
+    background: white;
+}
+
+.wintv-inc-campo input:focus,
+.wintv-inc-campo select:focus,
+.wintv-inc-campo textarea:focus {
+    outline: 2px solid #93baf1;
+}
+
+.wintv-inc-completo {
+    grid-column: 1 / -1;
+}
+
+.wintv-inc-errores {
+    color: #b42318;
+    font-size: 13px;
+}
+
+.wintv-inc-acciones {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.wintv-inc-cancelar,
+.wintv-inc-guardar {
+    padding: 13px 24px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.wintv-inc-cancelar {
+    background: #edf2fa;
+    color: #193b70;
+}
+
+.wintv-inc-guardar {
+    background: #193b70;
+    color: white;
+    border: none;
+}
+
+.wintv-inc-guardar:hover {
+    background: #28559a;
+}
+
+@media (max-width: 768px) {
+    .wintv-inc-panel {
+        padding: 20px;
+    }
+
+    .wintv-inc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-inc-cabecera {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* =====================================
+   HU-13 - LISTA DE INCIDENCIAS
+===================================== */
+
+.wintv-inc-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 25px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.wintv-inc-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    min-width: 850px;
+}
+
+.wintv-inc-tabla thead {
+    background: #193b70;
+    color: white;
+}
+
+.wintv-inc-tabla th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.wintv-inc-tabla td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.wintv-inc-tabla tbody tr:hover {
+    background: #f1f5fb;
+}
+
+.wintv-inc-prioridad {
+    background: #fff3d6;
+    color: #8a5700;
+    padding: 7px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.wintv-inc-estado {
+    background: #dcfce7;
+    color: #166534;
+    padding: 7px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.wintv-inc-vacio {
+    text-align: center;
+    padding: 35px !important;
+}
+
+.wintv-inc-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.wintv-inc-paginacion a {
+    background: #eaf1ff;
+    color: #193b70;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-inc-paginacion a:hover {
+    background: #d7e6ff;
+}

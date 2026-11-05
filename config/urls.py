@@ -22,4 +22,8 @@ urlpatterns = [
 
     # Gestión de servicios y contratos
     path('servicios/', include('servicios.urls')),
+
+    # HU-13: Registro de incidencias
+    path('incidencias/', include('incidencias.urls')),
+
 ]

@@ -45,6 +45,21 @@ def menu_wintv(request):
                 "url": "/usuarios/listar/",
             })
 
+        # HU-13: Gestión de incidencias
+        if roles.intersection({
+            "ADMINISTRADOR",
+            "TECNICO",
+        }):
+            menu.append({
+                "nombre": "🛠️ Registrar incidencias",
+                "url": "/incidencias/registrar/",
+            })
+
+            menu.append({
+                "nombre": "📋 Consultar incidencias",
+                "url": "/incidencias/listar/",
+            })
+
     else:
         menu.append({
             "nombre": "🔑 Iniciar sesión",
