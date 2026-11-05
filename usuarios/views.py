@@ -145,10 +145,11 @@ def editar_usuario(request, usuario_id):
         }
     )
 
-
-
 def iniciar_sesion(request):
     siguiente = request.POST.get('next') or request.GET.get('next')
+
+    if siguiente in ('None', 'null', ''):
+        siguiente = None
 
     if request.method == 'POST':
         username = request.POST.get('username')
