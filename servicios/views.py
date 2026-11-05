@@ -11,10 +11,31 @@ from . import estados
 
 @login_required
 def contrato_lista(request):
-    qs=Contrato.objects.select_related("cliente","plan").order_by("-fecha_inicio","-id_contrato")
-    estado=request.GET.get("estado","")
-    if estado in dict(estados.OPCIONES_ESTADO): qs=qs.filter(estado=estado)
-    return render(request,"servicios/contrato_lista.html",{"contratos":qs[:100],"opciones_estado":estados.OPCIONES_ESTADO,"estado_actual":estado})
+    if not request.user.is_superuser and not request.user.groups.filter(
+        name__in=["ADMINISTRADOR", "VENDEDOR", "CAJA"]
+    ).exists():
+        return HttpResponseForbidden(
+            "No tienes permiso para consultar contratos"
+        )
+
+    qs = Contrato.objects.select_related(
+        "cliente", "plan"
+    ).order_by("-fecha_inicio", "-id_contrato")
+
+    estado = request.GET.get("estado", "")
+
+    if estado in dict(estados.OPCIONES_ESTADO):
+        qs = qs.filter(estado=estado)
+
+    return render(
+        request,
+        "servicios/contrato_lista.html",
+        {
+            "contratos": qs[:100],
+            "opciones_estado": estados.OPCIONES_ESTADO,
+            "estado_actual": estado,
+        }
+    )
 
 @login_required
 def contrato_nuevo(request):
@@ -30,8 +51,24 @@ def contrato_nuevo(request):
     return render(request,"servicios/contrato_form.html",{"form":form})
 
 @login_required
-def contrato_detalle(request,pk):
-    return render(request,"servicios/contrato_detalle.html",{"contrato":get_object_or_404(Contrato.objects.select_related("cliente","plan"),pk=pk)})
+def contrato_detalle(request, pk):
+    if not request.user.is_superuser and not request.user.groups.filter(
+        name__in=["ADMINISTRADOR", "VENDEDOR", "CAJA"]
+    ).exists():
+        return HttpResponseForbidden(
+            "No tienes permiso para consultar los detalles del contrato"
+        )
+
+    contrato = get_object_or_404(
+        Contrato.objects.select_related("cliente", "plan"),
+        pk=pk
+    )
+
+    return render(
+        request,
+        "servicios/contrato_detalle.html",
+        {"contrato": contrato}
+    )
 
 @login_required
 def contrato_editar(request,pk):
