@@ -1,242 +1,173 @@
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1">
-    <title>Buscar clientes | WinTV</title>
+{% extends "base.html" %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+{% block titulo %}Buscar clientes | WinTV{% endblock %}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f6fb;
-            color: #263449;
-        }
+{% block contenido %}
 
-        .contenedor {
-            max-width: 1100px;
-            margin: 45px auto;
-            padding: 32px;
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 5px 24px #172b4d12;
-        }
+<div class="tarjeta wintv-cliente-registro">
 
-        .encabezado {
-            border-bottom: 1px solid #e5eaf1;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
-        }
+    <!-- ENCABEZADO -->
+    <header class="wintv-cliente-cabecera">
+        <h1>Gestión de clientes</h1>
+        <p>
+            Consulta los clientes registrados en WinTV
+            de manera rápida y sencilla.
+        </p>
+    </header>
 
-        h1 {
-            margin: 0 0 10px;
-            color: #193b70;
-        }
+    <!-- NAVEGACION -->
+    <nav class="wintv-cliente-navegacion"
+         aria-label="Gestión de clientes">
 
-        .subtitulo {
-            color: #697586;
-            margin: 0;
-        }
+        <a href="{% url 'clientes:registrar' %}"
+           class="wintv-cliente-pestana">
+            Registrar cliente
+        </a>
 
-        .navegacion {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
+        <a href="{% url 'clientes:buscar' %}"
+           class="wintv-cliente-pestana activa"
+           aria-current="page">
+            Buscar clientes
+        </a>
 
-        .pestana {
-            padding: 12px 18px;
-            text-decoration: none;
-            color: #193b70;
-            background: #edf2fa;
-            border-radius: 8px;
-            font-weight: bold;
-        }
+    </nav>
 
-        .pestana.activa {
-            background: #193b70;
-            color: white;
-        }
-
-        .buscador {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-        }
-
-        .buscador input {
-            flex: 1;
-            min-width: 0;
-            padding: 13px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        .boton {
-            padding: 13px 24px;
-            background: #193b70;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .boton:hover {
-            background: #28559a;
-        }
-
-        .tabla-contenedor {
-            overflow-x: auto;
-            margin-top: 22px;
-            border: 1px solid #e5eaf1;
-            border-radius: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            background: #edf2fa;
-            color: #193b70;
-            padding: 15px;
-            font-size: 14px;
-        }
-
-        td {
-            padding: 15px;
-            border-top: 1px solid #e5eaf1;
-            font-size: 14px;
-        }
-
-        tr:hover td {
-            background: #f8faff;
-        }
-
-        .sin-resultados {
-            padding: 25px;
-            text-align: center;
-            color: #697586;
-        }
-
-        @media (max-width: 650px) {
-            .contenedor {
-                margin: 12px;
-                padding: 20px;
-            }
-
-            .navegacion {
-                flex-wrap: wrap;
-            }
-
-            .buscador {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <main class="contenedor">
-
-        <header class="encabezado">
-            <h1>Gestión de clientes</h1>
-            <p class="subtitulo">
-                Consulta los clientes registrados en WinTV.
-            </p>
-        </header>
-
-        <nav class="navegacion">
-            <a class="pestana"
-               href="{% url 'clientes:registrar' %}">
-                Registrar cliente
-            </a>
-
-            <a class="pestana activa"
-               href="{% url 'clientes:buscar' %}">
-                Buscar clientes
-            </a>
-        </nav>
+    <!-- BUSQUEDA -->
+    <section class="wintv-busqueda-seccion">
 
         <h2>Buscar clientes registrados</h2>
 
-        <form method="GET" class="buscador">
+        <p class="wintv-cliente-descripcion">
+            Ingresa el nombre, apellido, documento
+            o código del cliente que deseas consultar.
+        </p>
+
+        <form method="GET"
+              class="wintv-busqueda-form">
+
             <input
                 type="search"
                 name="q"
-                value="{{ busqueda }}"
+                value="{{ busqueda|default_if_none:'' }}"
                 placeholder="Nombre, apellido, DNI, RUC o código"
                 aria-label="Buscar clientes"
             >
 
-            <button type="submit" class="boton">
-                Buscar
+            <button type="submit"
+                    class="wintv-busqueda-boton">
+                🔎 Buscar
             </button>
+
         </form>
 
-        <h2>Resultados</h2>
+    </section>
 
-        <div class="tabla-contenedor">
-            <table>
+    <!-- RESULTADOS -->
+    <section class="wintv-busqueda-resultados">
+
+        <div class="wintv-busqueda-encabezado">
+
+            <h2>Resultados de búsqueda</h2>
+
+            <span class="wintv-busqueda-info">
+                Clientes registrados
+            </span>
+
+        </div>
+
+        <!-- TABLA DE CLIENTES -->
+        <div class="wintv-busqueda-tabla-contenedor">
+
+            <table class="wintv-busqueda-tabla">
+
                 <thead>
                     <tr>
-                        <th>Código</th>
-                        <th>Cliente</th>
-                        <th>Documento</th>
-                        <th>Teléfono</th>
-                        <th>Zona</th>
+                        <th scope="col">Código</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Documento</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Zona</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {% for cliente in clientes %}
-                        <tr>
-                            <td>{{ cliente.id_cliente }}</td>
 
+                    {% for cliente in clientes %}
+
+                        <tr>
+
+                            <!-- CODIGO -->
                             <td>
-                                {% if cliente.razon_social %}
-                                    {{ cliente.razon_social }}
-                                {% else %}
-                                    {{ cliente.nombres }}
-                                    {{ cliente.apellidos }}
-                                {% endif %}
+                                {{ cliente.id_cliente }}
                             </td>
 
+                            <!-- NOMBRE O RAZON SOCIAL -->
+                            <td class="wintv-cliente-nombre">
+
+                                {% if cliente.razon_social %}
+
+                                    {{ cliente.razon_social }}
+
+                                {% else %}
+
+                                    {{ cliente.nombres }}
+                                    {{ cliente.apellidos }}
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- DOCUMENTO -->
                             <td>
                                 {{ cliente.tipo_documento }}
                                 {{ cliente.numero_documento }}
                             </td>
 
+                            <!-- TELEFONO -->
                             <td>
                                 {{ cliente.telefono|default:"—" }}
                             </td>
 
+                            <!-- ZONA -->
                             <td>
                                 {{ cliente.zona }}
                             </td>
+
                         </tr>
+
                     {% empty %}
+
                         <tr>
                             <td colspan="5"
-                                class="sin-resultados">
-                                No se encontraron clientes.
+                                class="wintv-sin-resultados">
+
+                                <div class="wintv-sin-resultados-icono">
+                                    🔎
+                                </div>
+
+                                <strong>
+                                    No se encontraron clientes
+                                </strong>
+
+                                <p>
+                                    Prueba con otro nombre,
+                                    documento o código.
+                                </p>
+
                             </td>
                         </tr>
+
                     {% endfor %}
+
                 </tbody>
+
             </table>
+
         </div>
 
-    </main>
-</body>
-</html>
+    </section>
+
+</div>
+
+{% endblock %}

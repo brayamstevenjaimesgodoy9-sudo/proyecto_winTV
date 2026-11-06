@@ -1,33 +1,91 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar usuario</title>
-</head>
-<body>
 
-    <h1>Editar usuario</h1>
+{% extends "base.html" %}
 
-    <p>
-        Usuario:
-        <strong>{{ usuario.username }}</strong>
-    </p>
+{% block titulo %}Editar usuario | WinTV{% endblock %}
 
-    <form method="post">
-        {% csrf_token %}
+{% block contenido %}
 
-        {{ form.as_p }}
+<section class="tarjeta wintv-editar-panel">
 
-        <button type="submit">
-            Guardar cambios
-        </button>
-    </form>
+    <!-- ENCABEZADO -->
+    <header class="wintv-editar-cabecera">
 
-    <p>
-        <a href="{% url 'listar_usuarios' %}">
-            Volver a la lista
+        <div>
+            <h1>Editar usuario</h1>
+
+            <p>
+                Actualiza la información y los permisos
+                del usuario seleccionado.
+            </p>
+        </div>
+
+        <a href="{% url 'listar_usuarios' %}"
+           class="wintv-editar-volver">
+            ← Volver a usuarios
         </a>
-    </p>
 
-</body>
-</html>
+    </header>
+
+    <!-- INFORMACION DEL USUARIO -->
+    <div class="wintv-editar-identidad">
+
+        <div class="wintv-editar-avatar">
+            {{ usuario.username|slice:":1"|upper }}
+        </div>
+
+        <div>
+            <small>Usuario seleccionado</small>
+
+            <h2>{{ usuario.username }}</h2>
+
+            <span>
+                {% if usuario.is_active %}
+                    Cuenta activa
+                {% else %}
+                    Cuenta inactiva
+                {% endif %}
+            </span>
+        </div>
+
+    </div>
+
+    <!-- FORMULARIO DE EDICION -->
+    <div class="wintv-editar-seccion">
+
+        <h2>Información del usuario</h2>
+
+        <p class="wintv-editar-descripcion">
+            Modifica los datos necesarios y guarda
+            los cambios para actualizar el usuario.
+        </p>
+
+        <form method="post"
+              class="wintv-editar-form">
+
+            {% csrf_token %}
+
+            <!-- CAMPOS ORIGINALES DE DJANGO -->
+            {{ form.as_p }}
+
+            <!-- ACCIONES -->
+            <div class="wintv-editar-acciones">
+
+                <a href="{% url 'listar_usuarios' %}"
+                   class="wintv-editar-cancelar">
+                    Cancelar
+                </a>
+
+                <button type="submit"
+                        class="wintv-editar-guardar">
+                    Guardar cambios
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

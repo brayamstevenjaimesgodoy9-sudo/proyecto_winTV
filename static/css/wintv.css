@@ -1,0 +1,1993 @@
+
+/* ==========================================
+   WINTV - ESTILOS GENERALES
+   TT-03: Plantilla base
+========================================== */
+
+:root {
+    --azul: #173b78;
+    --azul-oscuro: #102a54;
+    --azul-claro: #3178d6;
+    --fondo: #f1f5fa;
+    --texto: #24354b;
+    --borde: #d9e2ee;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+/* ESTRUCTURA PRINCIPAL */
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--azul-oscuro);
+    color: white;
+    padding: 25px 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.principal {
+    flex: 1;
+    min-width: 0;
+}
+
+/* MARCA WINTV */
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.marca-icono {
+    display: grid;
+    place-items: center;
+    width: 45px;
+    height: 45px;
+    background: var(--azul-claro);
+    border-radius: 12px;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.marca strong {
+    display: block;
+    font-size: 23px;
+}
+
+.marca small {
+    display: block;
+    color: #b9ccea;
+}
+
+/* MENU LATERAL */
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu a {
+    display: block;
+    padding: 14px;
+    border-radius: 9px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.menu a:hover,
+.menu a:focus-visible {
+    background: #28518a;
+}
+
+.sidebar-pie {
+    margin-top: auto;
+    padding-top: 30px;
+    font-size: 12px;
+    color: #a9bbd4;
+}
+
+/* BARRA SUPERIOR */
+
+.barra-superior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 23px 30px;
+    background: white;
+    box-shadow: 0 2px 8px #102a5410;
+}
+
+.barra-superior strong {
+    color: var(--azul-oscuro);
+}
+
+.barra-superior span {
+    display: block;
+    margin-top: 5px;
+    color: #718198;
+    font-size: 13px;
+}
+
+.usuario {
+    white-space: nowrap;
+}
+
+/* CONTENIDO */
+
+.contenido {
+    padding: 30px;
+}
+
+.tarjeta {
+    background: white;
+    border-radius: 14px;
+    padding: 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 16px #102a5410;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    background: var(--azul);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: var(--azul-claro);
+}
+
+/* MENSAJES */
+
+.mensaje {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #e1f4e8;
+    color: #166534;
+}
+
+/* ==========================================
+   REGISTRO DE CLIENTES
+========================================== */
+
+.wintv-cliente-registro {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+/* CABECERA */
+
+.wintv-cliente-cabecera {
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.wintv-cliente-cabecera h1 {
+    margin: 0 0 12px;
+    color: var(--azul);
+    font-size: 30px;
+}
+
+.wintv-cliente-cabecera p,
+.wintv-cliente-descripcion {
+    color: #697586;
+    line-height: 1.6;
+}
+
+/* PESTAÑAS */
+
+.wintv-cliente-navegacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.wintv-cliente-pestana {
+    display: inline-block;
+    padding: 13px 20px;
+    background: #edf2fa;
+    color: var(--azul);
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-cliente-pestana:hover {
+    background: #dbe6f5;
+}
+
+.wintv-cliente-pestana.activa {
+    background: var(--azul);
+    color: white;
+}
+
+/* FORMULARIO */
+
+.wintv-cliente-seccion h2 {
+    margin-bottom: 10px;
+    color: var(--azul);
+}
+
+.wintv-cliente-descripcion {
+    margin-bottom: 25px;
+}
+
+.wintv-cliente-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.wintv-cliente-campo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 7px;
+}
+
+.wintv-cliente-campo label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wintv-cliente-campo input,
+.wintv-cliente-campo select,
+.wintv-cliente-campo textarea {
+    display: block;
+    width: 100%;
+    min-height: 45px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: white;
+    color: var(--texto);
+    font: inherit;
+}
+
+.wintv-cliente-campo input:focus,
+.wintv-cliente-campo select:focus,
+.wintv-cliente-campo textarea:focus {
+    outline: 2px solid #a8c5f0;
+    border-color: var(--azul-claro);
+}
+
+.wintv-cliente-ayuda {
+    color: #697586;
+    font-size: 12px;
+}
+
+.wintv-cliente-errores {
+    color: #b42318;
+    font-size: 13px;
+}
+
+/* BOTON GUARDAR */
+
+.wintv-cliente-acciones {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+}
+
+.wintv-cliente-boton {
+    padding: 14px 26px;
+    color: white;
+    background: var(--azul);
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wintv-cliente-boton:hover {
+    background: var(--azul-claro);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 768px) {
+    .app {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .marca {
+        margin-bottom: 20px;
+    }
+
+    .menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .menu a {
+        padding: 10px 12px;
+    }
+
+    .barra-superior {
+        padding: 18px;
+    }
+
+    .contenido {
+        padding: 15px;
+    }
+
+    .wintv-cliente-registro {
+        padding: 20px;
+    }
+
+    .wintv-cliente-campos {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-cliente-cabecera h1 {
+        font-size: 24px;
+    }
+
+    .wintv-cliente-boton {
+        width: 100%;
+    }
+}
+
+
+/* ==================================
+   WINTV - ROLES DEL USUARIO
+================================== */
+
+.roles-usuario {
+    margin-top: 25px;
+    padding: 15px 12px;
+    border-top: 1px solid #ffffff25;
+}
+
+.roles-usuario small {
+    display: block;
+    color: #a9bbd4;
+    font-size: 12px;
+}
+
+.roles-usuario p {
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 8px 0 0;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================
+   WINTV - BUSQUEDA DE CLIENTES
+   TT-03: INTERFAZ
+========================================= */
+
+/* SECCION DE BUSQUEDA */
+
+.wintv-busqueda-seccion {
+    margin-bottom: 35px;
+}
+
+.wintv-busqueda-seccion h2 {
+    color: #173b78;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+/* FORMULARIO DE BUSQUEDA */
+
+.contenido .wintv-busqueda-form {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.contenido .wintv-busqueda-form input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 13px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: white;
+    color: #24354b;
+    font-size: 15px;
+}
+
+.contenido .wintv-busqueda-form input:focus {
+    outline: 2px solid #a8c5f0;
+    border-color: #3178d6;
+}
+
+/* BOTON BUSCAR */
+
+.contenido .wintv-busqueda-boton {
+    padding: 13px 25px;
+    min-height: 48px;
+    background: #173b78;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.contenido .wintv-busqueda-boton:hover {
+    background: #3178d6;
+}
+
+/* ENCABEZADO DE RESULTADOS */
+
+.wintv-busqueda-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.wintv-busqueda-encabezado h2 {
+    margin: 0;
+    color: #173b78;
+    font-size: 22px;
+}
+
+.wintv-busqueda-info {
+    padding: 8px 13px;
+    background: #edf2fa;
+    color: #173b78;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* TABLA DE RESULTADOS */
+
+.wintv-busqueda-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf1;
+    border-radius: 12px;
+}
+
+.contenido .wintv-busqueda-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.contenido .wintv-busqueda-tabla th {
+    padding: 17px;
+    background: #173b78;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.contenido .wintv-busqueda-tabla td {
+    padding: 16px;
+    border-bottom: 1px solid #e5eaf1;
+    color: #24354b;
+    font-size: 14px;
+}
+
+.wintv-busqueda-tabla tbody tr:hover td {
+    background: #f3f7fc;
+}
+
+.wintv-busqueda-tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.wintv-cliente-nombre {
+    font-weight: 600;
+    color: #173b78;
+}
+
+/* SIN RESULTADOS */
+
+.wintv-sin-resultados {
+    padding: 40px 20px !important;
+    text-align: center !important;
+}
+
+.wintv-sin-resultados-icono {
+    font-size: 30px;
+    margin-bottom: 12px;
+}
+
+.wintv-sin-resultados strong {
+    display: block;
+    color: #173b78;
+    font-size: 17px;
+}
+
+.wintv-sin-resultados p {
+    margin-top: 9px;
+    color: #697586;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .contenido .wintv-busqueda-form {
+        flex-direction: column;
+    }
+
+    .contenido .wintv-busqueda-boton {
+        width: 100%;
+    }
+
+    .wintv-busqueda-tabla {
+        min-width: 650px;
+    }
+
+    .wintv-busqueda-encabezado {
+        align-items: flex-start;
+    }
+
+}
+
+
+/* =========================================
+   WINTV - GESTION DE USUARIOS
+   TT-03: PLANTILLA BASE
+========================================= */
+
+.wintv-usuarios-panel {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+/* ENCABEZADO */
+
+.wintv-usuarios-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-bottom: 25px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.wintv-usuarios-cabecera h1 {
+    margin: 0 0 12px;
+    color: #173b78;
+    font-size: 30px;
+}
+
+.wintv-usuarios-cabecera p {
+    color: #697586;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.wintv-usuarios-salir {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #edf2fa;
+    color: #173b78;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-usuarios-salir:hover {
+    background: #dbe6f5;
+}
+
+/* TITULO */
+
+.wintv-usuarios-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.wintv-usuarios-titulo h2 {
+    color: #173b78;
+    margin: 0 0 8px;
+}
+
+.wintv-usuarios-titulo p {
+    color: #697586;
+    margin: 0;
+}
+
+.wintv-usuarios-etiqueta {
+    padding: 8px 14px;
+    background: #edf2fa;
+    color: #173b78;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+/* TABLA */
+
+.wintv-usuarios-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf1;
+    border-radius: 12px;
+}
+
+.contenido .wintv-usuarios-tabla {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.contenido .wintv-usuarios-tabla th {
+    padding: 16px;
+    background: #173b78;
+    color: white;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.contenido .wintv-usuarios-tabla td {
+    padding: 15px;
+    color: #24354b;
+    font-size: 14px;
+    border-bottom: 1px solid #e5eaf1;
+    vertical-align: middle;
+}
+
+.wintv-usuarios-tabla tbody tr:hover td {
+    background: #f3f7fc;
+}
+
+/* IDENTIDAD */
+
+.wintv-usuarios-identidad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wintv-usuarios-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e4edfc;
+    color: #173b78;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.wintv-usuarios-correo {
+    overflow-wrap: anywhere;
+}
+
+/* ROLES */
+
+.wintv-usuarios-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 270px;
+}
+
+.wintv-usuarios-rol {
+    display: inline-block;
+    background: #e8efff;
+    color: #173b78;
+    padding: 6px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.wintv-usuarios-sinrol {
+    color: #697586;
+    font-size: 13px;
+}
+
+/* ESTADOS */
+
+.wintv-usuarios-estado {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wintv-usuarios-estado.activo {
+    background: #e1f4e8;
+    color: #166534;
+}
+
+.wintv-usuarios-estado.inactivo {
+    background: #fee8e7;
+    color: #b42318;
+}
+
+/* ACCIONES */
+
+.wintv-usuarios-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.wintv-usuarios-acciones a {
+    display: inline-block;
+    padding: 9px 12px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wintv-usuarios-editar {
+    background: #e8efff;
+    color: #173b78;
+}
+
+.wintv-usuarios-desactivar {
+    background: #fee8e7;
+    color: #b42318;
+}
+
+.wintv-usuarios-activar {
+    background: #e1f4e8;
+    color: #166534;
+}
+
+.wintv-usuarios-acciones a:hover {
+    filter: brightness(0.94);
+}
+
+/* TABLA VACIA */
+
+.wintv-usuarios-vacio {
+    text-align: center !important;
+    padding: 45px 20px !important;
+}
+
+.wintv-usuarios-vacio-icono {
+    font-size: 30px;
+    margin-bottom: 12px;
+}
+
+.wintv-usuarios-vacio strong {
+    color: #173b78;
+}
+
+.wintv-usuarios-vacio p {
+    color: #697586;
+}
+
+/* ADAPTACION A MOVILES */
+
+@media (max-width: 768px) {
+    .wintv-usuarios-panel {
+        padding: 20px;
+    }
+
+    .wintv-usuarios-cabecera h1 {
+        font-size: 24px;
+    }
+
+    .wintv-usuarios-cabecera {
+        align-items: flex-start;
+    }
+
+    .wintv-usuarios-salir {
+        width: 100%;
+        text-align: center;
+    }
+
+    .wintv-usuarios-titulo {
+        align-items: flex-start;
+    }
+}
+
+
+/* =========================================
+   WINTV - EDITAR USUARIO
+   TT-03: PLANTILLA BASE
+========================================= */
+
+.wintv-editar-panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+/* ENCABEZADO */
+
+.wintv-editar-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.wintv-editar-cabecera h1 {
+    margin: 0 0 12px;
+    color: #173b78;
+    font-size: 30px;
+}
+
+.wintv-editar-cabecera p {
+    color: #697586;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.wintv-editar-volver {
+    padding: 12px 18px;
+    border-radius: 9px;
+    color: #173b78;
+    background: #edf2fa;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-editar-volver:hover {
+    background: #dbe6f5;
+}
+
+/* IDENTIDAD DEL USUARIO */
+
+.wintv-editar-identidad {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin: 25px 0;
+    padding: 22px;
+    background: #f3f7fc;
+    border: 1px solid #e2eaf4;
+    border-radius: 12px;
+}
+
+.wintv-editar-avatar {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    background: #173b78;
+    color: white;
+    border-radius: 50%;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.wintv-editar-identidad small {
+    display: block;
+    color: #697586;
+    margin-bottom: 6px;
+}
+
+.wintv-editar-identidad h2 {
+    margin: 0 0 6px;
+    color: #173b78;
+    font-size: 22px;
+}
+
+.wintv-editar-identidad span {
+    font-size: 13px;
+    color: #697586;
+}
+
+/* SECCION FORMULARIO */
+
+.wintv-editar-seccion {
+    margin-top: 30px;
+}
+
+.wintv-editar-seccion h2 {
+    color: #173b78;
+    font-size: 23px;
+    margin-bottom: 10px;
+}
+
+.wintv-editar-descripcion {
+    color: #697586;
+    margin-bottom: 25px;
+}
+
+/* CAMPOS DINAMICOS DEL FORMULARIO */
+
+.contenido .wintv-editar-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.wintv-editar-form > p {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 8px;
+    margin: 0;
+}
+
+.wintv-editar-form label {
+    color: #24354b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wintv-editar-form input:not([type="checkbox"]):not([type="radio"]),
+.wintv-editar-form select,
+.wintv-editar-form textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 45px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font: inherit;
+    color: #24354b;
+    background: white;
+}
+
+.wintv-editar-form input:focus-visible,
+.wintv-editar-form select:focus-visible,
+.wintv-editar-form textarea:focus-visible {
+    outline: 2px solid #a8c5f0;
+    outline-offset: 1px;
+}
+
+.wintv-editar-form input[type="checkbox"],
+.wintv-editar-form input[type="radio"] {
+    width: auto;
+    margin-right: 6px;
+}
+
+.wintv-editar-form select[multiple] {
+    min-height: 130px;
+}
+
+.wintv-editar-form .helptext,
+.wintv-editar-form .helptext li {
+    color: #697586;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.wintv-editar-form .errorlist {
+    color: #b42318;
+    font-size: 13px;
+    padding-left: 18px;
+    margin: 4px 0;
+}
+
+/* BOTONES */
+
+.wintv-editar-acciones {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e5eaf1;
+    margin-top: 10px;
+}
+
+.wintv-editar-cancelar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    background: #edf2fa;
+    color: #173b78;
+    text-decoration: none;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.contenido .wintv-editar-guardar {
+    padding: 13px 24px;
+    background: #173b78;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.contenido .wintv-editar-guardar:hover {
+    background: #3178d6;
+}
+
+.wintv-editar-cancelar:hover {
+    background: #dbe6f5;
+}
+
+/* ADAPTACION A MOVILES */
+
+@media (max-width: 768px) {
+
+    .wintv-editar-panel {
+        padding: 20px;
+    }
+
+    .wintv-editar-cabecera h1 {
+        font-size: 24px;
+    }
+
+    .contenido .wintv-editar-form {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-editar-volver {
+        width: 100%;
+        text-align: center;
+    }
+
+    .wintv-editar-acciones {
+        flex-direction: column;
+    }
+
+    .wintv-editar-cancelar,
+    .contenido .wintv-editar-guardar {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+/* =========================================
+   WINTV - CREAR USUARIO
+   TT-03: PLANTILLA BASE
+========================================= */
+
+.wintv-crear-panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px;
+}
+
+/* ENCABEZADO */
+
+.wintv-crear-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-bottom: 25px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e5eaf1;
+}
+
+.wintv-crear-cabecera h1 {
+    margin: 0 0 12px;
+    color: #173b78;
+    font-size: 30px;
+}
+
+.wintv-crear-cabecera p {
+    color: #697586;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.wintv-crear-volver {
+    padding: 12px 18px;
+    background: #edf2fa;
+    color: #173b78;
+    text-decoration: none;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.wintv-crear-volver:hover {
+    background: #dbe6f5;
+}
+
+/* PRESENTACION */
+
+.wintv-crear-presentacion {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px;
+    margin-bottom: 30px;
+    background: #f3f7fc;
+    border: 1px solid #e2eaf4;
+    border-radius: 12px;
+}
+
+.wintv-crear-icono {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    background: #173b78;
+    color: white;
+    border-radius: 14px;
+    font-size: 26px;
+}
+
+.wintv-crear-presentacion h2 {
+    color: #173b78;
+    font-size: 21px;
+    margin: 0 0 8px;
+}
+
+.wintv-crear-presentacion p {
+    margin: 0;
+    color: #697586;
+    line-height: 1.5;
+}
+
+/* FORMULARIO */
+
+.contenido .wintv-crear-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.wintv-crear-form > p {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+}
+
+.wintv-crear-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #24354b;
+}
+
+.wintv-crear-form input:not([type="checkbox"]):not([type="radio"]),
+.wintv-crear-form select,
+.wintv-crear-form textarea {
+    width: 100%;
+    max-width: 100%;
+    min-height: 45px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: white;
+    color: #24354b;
+    font: inherit;
+}
+
+.wintv-crear-form input:focus-visible,
+.wintv-crear-form select:focus-visible,
+.wintv-crear-form textarea:focus-visible {
+    outline: 2px solid #a8c5f0;
+    outline-offset: 1px;
+}
+
+.wintv-crear-form input[type="checkbox"],
+.wintv-crear-form input[type="radio"] {
+    width: auto;
+    margin-right: 6px;
+}
+
+.wintv-crear-form select[multiple] {
+    min-height: 130px;
+}
+
+.wintv-crear-form .helptext,
+.wintv-crear-form .helptext li {
+    color: #697586;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.wintv-crear-form .errorlist {
+    color: #b42318;
+    font-size: 13px;
+    margin: 4px 0;
+    padding-left: 18px;
+}
+
+/* BOTONES */
+
+.wintv-crear-acciones {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e5eaf1;
+}
+
+.wintv-crear-cancelar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    background: #edf2fa;
+    color: #173b78;
+    text-decoration: none;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.wintv-crear-cancelar:hover {
+    background: #dbe6f5;
+}
+
+.contenido .wintv-crear-guardar {
+    padding: 13px 24px;
+    background: #173b78;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.contenido .wintv-crear-guardar:hover {
+    background: #3178d6;
+}
+
+/* ADAPTACION A MOVILES */
+
+@media (max-width: 768px) {
+    .wintv-crear-panel {
+        padding: 20px;
+    }
+
+    .wintv-crear-cabecera h1 {
+        font-size: 24px;
+    }
+
+    .wintv-crear-volver {
+        width: 100%;
+        text-align: center;
+    }
+
+    .wintv-crear-presentacion {
+        align-items: flex-start;
+    }
+
+    .contenido .wintv-crear-form {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-crear-acciones {
+        flex-direction: column;
+    }
+
+    .wintv-crear-cancelar,
+    .contenido .wintv-crear-guardar {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+/* =========================================
+   WINTV - INICIO DE SESION
+   TT-03: PLANTILLA BASE
+========================================= */
+
+body.wintv-login-body {
+    min-height: 100vh;
+    margin: 0;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(
+        135deg,
+        #102a54 0%,
+        #173b78 50%,
+        #3178d6 100%
+    );
+    font-family: Arial, sans-serif;
+}
+
+.wintv-login-contenedor {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 1050px;
+    min-height: 580px;
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px #07172b40;
+}
+
+/* PANEL IZQUIERDO */
+
+.wintv-login-presentacion {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px;
+    background: #102a54;
+    color: #ffffff;
+}
+
+.wintv-login-logo {
+    display: grid;
+    place-items: center;
+    width: 75px;
+    height: 75px;
+    background: #3178d6;
+    color: white;
+    border-radius: 18px;
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.wintv-login-presentacion h1 {
+    font-size: 34px;
+    line-height: 1.2;
+    margin: 0 0 18px;
+    color: white;
+}
+
+.wintv-login-presentacion > p {
+    font-size: 17px;
+    color: #c4d6ed;
+    line-height: 1.6;
+}
+
+.wintv-login-descripcion {
+    margin-top: 35px;
+    padding-top: 25px;
+    border-top: 1px solid #ffffff30;
+}
+
+.wintv-login-descripcion h2 {
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.wintv-login-descripcion p {
+    color: #c4d6ed;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+.wintv-login-pie {
+    margin-top: auto;
+    padding-top: 35px;
+    font-size: 12px;
+    color: #a9bbd4;
+}
+
+/* PANEL DERECHO */
+
+.wintv-login-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 55px 50px;
+    min-width: 0;
+}
+
+.wintv-login-etiqueta {
+    display: inline-block;
+    margin-bottom: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    color: #3178d6;
+}
+
+.wintv-login-encabezado h2 {
+    color: #173b78;
+    font-size: 32px;
+    margin: 0 0 13px;
+}
+
+.wintv-login-encabezado p {
+    color: #697586;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+/* FORMULARIO */
+
+.wintv-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.wintv-login-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.wintv-login-campo label {
+    color: #24354b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.wintv-login-campo input {
+    width: 100%;
+    height: 50px;
+    padding: 13px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 15px;
+    color: #24354b;
+}
+
+.wintv-login-campo input:focus {
+    outline: 2px solid #a8c5f0;
+    outline-offset: 1px;
+    border-color: #3178d6;
+}
+
+.wintv-login-campo input::placeholder {
+    color: #94a3b8;
+}
+
+/* BOTON */
+
+.wintv-login-boton {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 5px;
+    background: #173b78;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.wintv-login-boton:hover {
+    background: #3178d6;
+}
+
+/* MENSAJES */
+
+.wintv-login-mensaje {
+    padding: 14px;
+    margin-bottom: 20px;
+    background: #eaf1fc;
+    border: 1px solid #cfddf5;
+    color: #173b78;
+    border-radius: 9px;
+    line-height: 1.5;
+}
+
+/* SEGURIDAD */
+
+.wintv-login-seguridad {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding: 15px;
+    background: #f3f7fc;
+    border-radius: 10px;
+}
+
+.wintv-login-seguridad p {
+    margin: 0;
+    color: #697586;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ADAPTACION A MOVILES */
+
+@media (max-width: 768px) {
+
+    body.wintv-login-body {
+        padding: 15px;
+    }
+
+    .wintv-login-contenedor {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .wintv-login-presentacion {
+        padding: 30px;
+    }
+
+    .wintv-login-logo {
+        width: 55px;
+        height: 55px;
+        font-size: 30px;
+        margin-bottom: 15px;
+    }
+
+    .wintv-login-presentacion h1 {
+        font-size: 25px;
+    }
+
+    .wintv-login-descripcion,
+    .wintv-login-pie {
+        display: none;
+    }
+
+    .wintv-login-panel {
+        padding: 35px 25px;
+    }
+
+    .wintv-login-encabezado h2 {
+        font-size: 27px;
+    }
+}
+
+
+/* =====================================
+   LOGO OFICIAL DE WINTV - TT-03
+===================================== */
+
+/* Logo en el menú lateral */
+
+.marca-logo {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+/* Logo en la pantalla de acceso */
+
+.wintv-login-logo {
+    width: 155px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 14px;
+    padding: 8px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.wintv-login-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* LOGO OFICIAL WINTV */
+
+.wintv-login-logo {
+    width: 280px;
+    max-width: 100%;
+    height: 160px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 24px;
+    overflow: visible;
+}
+
+.wintv-login-logo-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+
+/* LOGO OFICIAL WINTV EN LOGIN */
+
+.wintv-login-logo {
+    width: 320px;
+    max-width: 100%;
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.wintv-login-logo-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* LOGO OFICIAL DE WINTV EN EL MENU LATERAL */
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.marca-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .marca-logo {
+        width: 58px;
+        height: 58px;
+    }
+}
+
+
+/* =====================================
+   WINTV - HU-13 REGISTRAR INCIDENCIAS
+===================================== */
+
+.wintv-inc-panel {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 36px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(20, 50, 90, .06);
+}
+
+.wintv-inc-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wintv-inc-cabecera h1 {
+    margin: 0 0 12px;
+    color: #193b70;
+    font-size: 30px;
+}
+
+.wintv-inc-cabecera p,
+.wintv-inc-informacion p {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.wintv-inc-etiqueta {
+    background: #eaf1ff;
+    color: #193b70;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-weight: bold;
+}
+
+.wintv-inc-informacion {
+    margin: 28px 0;
+}
+
+.wintv-inc-informacion h2 {
+    color: #193b70;
+}
+
+.wintv-inc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.wintv-inc-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+}
+
+.wintv-inc-campo label {
+    color: #122c52;
+    font-weight: 600;
+}
+
+.wintv-inc-campo input,
+.wintv-inc-campo select,
+.wintv-inc-campo textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font: inherit;
+    background: white;
+}
+
+.wintv-inc-campo input:focus,
+.wintv-inc-campo select:focus,
+.wintv-inc-campo textarea:focus {
+    outline: 2px solid #93baf1;
+}
+
+.wintv-inc-completo {
+    grid-column: 1 / -1;
+}
+
+.wintv-inc-errores {
+    color: #b42318;
+    font-size: 13px;
+}
+
+.wintv-inc-acciones {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.wintv-inc-cancelar,
+.wintv-inc-guardar {
+    padding: 13px 24px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.wintv-inc-cancelar {
+    background: #edf2fa;
+    color: #193b70;
+}
+
+.wintv-inc-guardar {
+    background: #193b70;
+    color: white;
+    border: none;
+}
+
+.wintv-inc-guardar:hover {
+    background: #28559a;
+}
+
+@media (max-width: 768px) {
+    .wintv-inc-panel {
+        padding: 20px;
+    }
+
+    .wintv-inc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wintv-inc-cabecera {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* =====================================
+   HU-13 - LISTA DE INCIDENCIAS
+===================================== */
+
+.wintv-inc-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 25px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.wintv-inc-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    min-width: 850px;
+}
+
+.wintv-inc-tabla thead {
+    background: #193b70;
+    color: white;
+}
+
+.wintv-inc-tabla th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.wintv-inc-tabla td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.wintv-inc-tabla tbody tr:hover {
+    background: #f1f5fb;
+}
+
+.wintv-inc-prioridad {
+    background: #fff3d6;
+    color: #8a5700;
+    padding: 7px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.wintv-inc-estado {
+    background: #dcfce7;
+    color: #166534;
+    padding: 7px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.wintv-inc-vacio {
+    text-align: center;
+    padding: 35px !important;
+}
+
+.wintv-inc-paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.wintv-inc-paginacion a {
+    background: #eaf1ff;
+    color: #193b70;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-inc-paginacion a:hover {
+    background: #d7e6ff;
+}
+
+
+/* ==========================================
+   HU-14: FILTROS DE INCIDENCIAS
+========================================== */
+
+.wintv-inc-filtros {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+}
+
+.wintv-inc-filtro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 230px;
+    max-width: 380px;
+}
+
+.wintv-inc-filtro-campo label {
+    font-weight: 600;
+    color: #102a53;
+}
+
+.wintv-inc-filtro-campo select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    font-size: 15px;
+}
+
+.wintv-inc-btn-filtrar {
+    padding: 12px 24px;
+    background: #193b73;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.wintv-inc-btn-filtrar:hover {
+    background: #28559a;
+}
+
+.wintv-inc-btn-limpiar {
+    padding: 12px 20px;
+    color: #193b73;
+    background: #edf2fa;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wintv-inc-btn-limpiar:hover {
+    background: #dce7f8;
+}
+
+@media (max-width: 768px) {
+    .wintv-inc-filtro-campo {
+        max-width: none;
+        flex-basis: 100%;
+    }
+}

@@ -1,0 +1,143 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{% block titulo %}WinTV{% endblock %}</title>
+
+    <link rel="stylesheet"
+          href="{% static 'css/wintv.css' %}">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- ===================================
+         MENU LATERAL WINTV
+    =================================== -->
+    <aside class="sidebar">
+
+        <!-- MARCA -->
+        <div class="marca">
+            <img
+    src="{% static 'img/logo_wintv.png' %}"
+    alt="Logo oficial de WinTV"
+    class="marca-logo"
+>
+
+            <div>
+                <strong>WinTV</strong>
+                <small>Gestión comercial</small>
+            </div>
+        </div>
+
+        <!-- MENU DINAMICO SEGUN ROL -->
+        <nav class="menu" aria-label="Menú principal">
+
+            {% for opcion in menu_wintv %}
+
+                <a href="{{ opcion.url }}">
+                    {{ opcion.nombre }}
+                </a>
+
+            {% empty %}
+
+                <a href="/">🏠 Inicio</a>
+
+            {% endfor %}
+
+        </nav>
+
+        <!-- ===================================
+             INFORMACION DE ROLES DEL USUARIO
+        =================================== -->
+        {% if user.is_authenticated %}
+
+            <div class="roles-usuario">
+
+                <small>Roles asignados</small>
+
+                <p>
+                    {{ roles_wintv|default:"Sin roles detectados" }}
+                </p>
+
+            </div>
+
+        {% endif %}
+
+        <!-- PIE DEL MENU -->
+        <div class="sidebar-pie">
+            WinTV - Sistema de gestión
+        </div>
+
+    </aside>
+
+    <!-- ===================================
+         CONTENIDO PRINCIPAL
+    =================================== -->
+    <div class="principal">
+
+        <!-- BARRA SUPERIOR -->
+        <header class="barra-superior">
+
+            <div>
+                <strong>Panel de gestión</strong>
+
+                <span>
+                    Sistema comercial WinTV
+                </span>
+            </div>
+
+            <!-- USUARIO ACTUAL -->
+            <div class="usuario">
+
+                {% if user.is_authenticated %}
+
+                    👤 {{ user.username }}
+
+                {% else %}
+
+                    Invitado
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+        <!-- ===================================
+             CONTENIDO DE LAS PAGINAS
+        =================================== -->
+        <main class="contenido">
+
+            <!-- MENSAJES DE DJANGO -->
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="mensaje" role="status">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+            <!-- CONTENIDO DINAMICO -->
+            {% block contenido %}
+
+            {% endblock %}
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

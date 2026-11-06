@@ -1,0 +1,195 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Lista de incidencias | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <!-- ENCABEZADO -->
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Gestión de incidencias</h1>
+            <p>
+                Consulta las averías reportadas
+                por los clientes de WinTV.
+            </p>
+        </div>
+
+        <a href="{% url 'incidencias:registrar' %}"
+           class="wintv-inc-guardar">
+            + Nueva incidencia
+        </a>
+    </header>
+
+    <!-- INFORMACIÓN -->
+    <div class="wintv-inc-informacion">
+        <h2>Incidencias registradas</h2>
+        <p>
+            Historial de reportes almacenados
+            en Oracle.
+        </p>
+    </div>
+
+    <!-- ======================================
+         HU-14: FILTRO POR TIPO DE AVERÍA
+    ======================================= -->
+
+    <form method="get"
+          action="{% url 'incidencias:listar' %}"
+          class="wintv-inc-filtros">
+
+        <div class="wintv-inc-filtro-campo">
+
+            <label for="tipo_averia">
+                Tipo de avería
+            </label>
+
+            <select name="tipo_averia"
+                    id="tipo_averia">
+
+                <option value="">
+                    Todos los tipos de avería
+                </option>
+
+                {% for tipo in tipos_averia %}
+
+                    <option
+                        value="{{ tipo.id_tipo_averia }}"
+                        {% if tipo_seleccionado == tipo.id_tipo_averia|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ tipo.nombre }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <button type="submit"
+                class="wintv-inc-btn-filtrar">
+            Filtrar
+        </button>
+
+        <a href="{% url 'incidencias:listar' %}"
+           class="wintv-inc-btn-limpiar">
+            Limpiar filtros
+        </a>
+
+    </form>
+
+    <!-- TABLA DE INCIDENCIAS -->
+    <div class="wintv-inc-tabla-contenedor">
+
+        <table class="wintv-inc-tabla">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Contrato</th>
+                    <th>Tipo de avería</th>
+                    <th>Fecha</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for incidencia in pagina %}
+
+                <tr>
+                    <td>
+                        #{{ incidencia.id_incidencia }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.id_cliente }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.id_contrato }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.tipo_averia.nombre }}
+                    </td>
+
+                    <td>
+                        {{ incidencia.fecha_reporte|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td>
+                        <span class="wintv-inc-prioridad">
+                            {{ incidencia.prioridad }}
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="wintv-inc-estado">
+                            {{ incidencia.estado }}
+                        </span>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7"
+                        class="wintv-inc-vacio">
+
+                        {% if tipo_seleccionado %}
+                            No existen incidencias para
+                            el tipo de avería seleccionado.
+                        {% else %}
+                            No existen incidencias registradas.
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ======================================
+         PAGINACIÓN CON FILTRO CONSERVADO
+    ======================================= -->
+
+    <div class="wintv-inc-paginacion">
+
+        {% if pagina.has_previous %}
+
+            <a href="?page={{ pagina.previous_page_number }}{% if tipo_seleccionado %}&amp;tipo_averia={{ tipo_seleccionado|urlencode }}{% endif %}">
+                ← Anterior
+            </a>
+
+        {% endif %}
+
+        <span>
+            Página {{ pagina.number }}
+            de {{ pagina.paginator.num_pages }}
+        </span>
+
+        {% if pagina.has_next %}
+
+            <a href="?page={{ pagina.next_page_number }}{% if tipo_seleccionado %}&amp;tipo_averia={{ tipo_seleccionado|urlencode }}{% endif %}">
+                Siguiente →
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}
