@@ -30,7 +30,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = ['usuarios',
+INSTALLED_APPS = [
+    'usuarios',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +39,7 @@ INSTALLED_APPS = ['usuarios',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'clientes',
+    'almacen',
     'servicios',
     'incidencias',
 ]
@@ -80,8 +82,8 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'localhost:1521/XEPDB1',
-        'USER': 'WINTV_DJANGO',
+        'NAME': os.environ.get('WINTV_DB_NAME', 'localhost:1521/freepdb1'),
+        'USER': os.environ.get('WINTV_DB_USER', 'WINTV_USER'),
         'PASSWORD': os.environ.get('WINTV_DB_PASSWORD', ''),
     }
 }

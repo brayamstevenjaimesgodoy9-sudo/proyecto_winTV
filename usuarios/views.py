@@ -174,6 +174,9 @@ def iniciar_sesion(request):
             if es_administrador(usuario):
                 return redirect('listar_usuarios')
 
+            if usuario.groups.filter(name='ALMACEN').exists():
+                return redirect('inicio_almacen')
+
             if usuario.is_superuser or usuario.groups.filter(
                 name__in=["VENDEDOR", "CAJA"]
             ).exists():
@@ -193,7 +196,6 @@ def iniciar_sesion(request):
         'usuarios/login.html',
         {'next': siguiente}
     )
-
 
 def cerrar_sesion(request):
     logout(request)
