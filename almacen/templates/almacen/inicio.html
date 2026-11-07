@@ -1,0 +1,179 @@
+cat > almacen/templates/almacen/inicio.html <<'EOF'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacén WinTV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f5f6fa;
+            color: #263238;
+        }
+        h1, h2 { color: #263238; }
+        form, .seccion {
+            background: white;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        }
+        input, select, textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 9px;
+            margin: 5px 0 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #125ca1; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background: #263238; color: white; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .mensaje {
+            padding: 10px;
+            background: #d4edda;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .sin-stock { color: #c62828; font-weight: bold; }
+        .stock { color: #2e7d32; font-weight: bold; }
+        .tabla-contenedor { overflow-x: auto; }
+        .errorlist { color: #c62828; }
+        a { color: #1976d2; }
+    </style>
+</head>
+<body>
+
+    <h1>Gestión de Almacén WinTV</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="mensaje">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <section class="seccion">
+        <h2>Registrar producto nuevo</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ producto_form.as_p }}
+            <button type="submit" name="accion" value="registrar_producto">
+                Guardar producto
+            </button>
+        </form>
+    </section>
+
+    <section class="seccion">
+        <h2>Registrar ingreso de productos</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ ingreso_form.as_p }}
+            <button type="submit" name="accion" value="registrar_ingreso">
+                Registrar ingreso
+            </button>
+        </form>
+    </section>
+
+    <section class="seccion">
+        <h2>Consulta de stock disponible</h2>
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>Descripción</th>
+                        <th>Categoría</th>
+                        <th>Unidad de medida</th>
+                        <th>Cantidad disponible</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td>{{ producto.codigo }}</td>
+                        <td>{{ producto.nombre }}</td>
+                        <td>{{ producto.descripcion|default:"-" }}</td>
+                        <td>{{ producto.categoria }}</td>
+                        <td>{{ producto.unidad_medida }}</td>
+                        <td>
+                            {% if producto.stock_actual > 0 %}
+                                <span class="stock">{{ producto.stock_actual }}</span>
+                            {% else %}
+                                <span class="sin-stock">0</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No hay productos registrados en el almacén.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="seccion">
+        <h2>Historial de movimientos</h2>
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Usuario ID</th>
+                        <th>Motivo</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in movimientos %}
+                    <tr>
+                        <td>{{ movimiento.id_movimiento }}</td>
+                        <td>{{ movimiento.producto.nombre }}</td>
+                        <td>{{ movimiento.tipo_movimiento }}</td>
+                        <td>{{ movimiento.cantidad }}</td>
+                        <td>{{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}</td>
+                        <td>{{ movimiento.id_usuario }}</td>
+                        <td>{{ movimiento.motivo }}</td>
+                        <td>{{ movimiento.observaciones|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">No hay movimientos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p><a href="{% url 'logout' %}">Cerrar sesión</a></p>
+
+</body>
+</html>
