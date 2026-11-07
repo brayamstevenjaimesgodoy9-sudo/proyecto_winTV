@@ -1,4 +1,3 @@
-
 /* ==========================================
    WINTV - ESTILOS GENERALES
    TT-03: Plantilla base
@@ -1922,11 +1921,68 @@ body.wintv-login-body {
     background: #d7e6ff;
 }
 
+/* ==========================================
+   WINTV - EDICION DE CONTRATOS
+
+.wintv-contrato-formulario {
+    margin-top: 24px;
+}
+
+.wintv-contrato-formulario h3,
+.wintv-contrato-campo label {
+    color: var(--azul-oscuro);
+}
+
+.wintv-contrato-formulario form p {
+    margin-bottom: 20px;
+}
+
+.wintv-contrato-formulario label,
+.wintv-contrato-campo label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.wintv-contrato-formulario input,
+.wintv-contrato-formulario select,
+.wintv-contrato-formulario textarea,
+.wintv-contrato-campo select {
+    display: block;
+    width: 100%;
+    max-width: 520px;
+    padding: 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font: inherit;
+    background: white;
+    color: var(--texto);
+}
+
+.wintv-contrato-formulario input:focus,
+.wintv-contrato-formulario select:focus,
+.wintv-contrato-formulario textarea:focus,
+.wintv-contrato-campo select:focus {
+    outline: 2px solid var(--azul-claro);
+    outline-offset: 1px;
+}
+
+.wintv-contrato-acciones {
+    margin-top: 20px;
+}
+
+.wintv-contrato-campo {
+    margin-top: 18px;
+}
+
+.wintv-contrato-formulario .errorlist {
+    color: #b42318;
+    padding-left: 20px;
+}
 
 /* ==========================================
    HU-14: FILTROS DE INCIDENCIAS
 ========================================== */
-
 .wintv-inc-filtros {
     display: flex;
     align-items: flex-end;

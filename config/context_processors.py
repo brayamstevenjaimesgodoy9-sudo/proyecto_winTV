@@ -44,6 +44,16 @@ def menu_wintv(request):
                 "nombre": "🔐 Usuarios",
                 "url": "/usuarios/listar/",
             })
+        # HU-02: Gestión de contratos
+        if roles.intersection({
+            "ADMINISTRADOR",
+            "VENDEDOR",
+            "CAJA",
+        }):
+            menu.append({
+                "nombre": "📄 Consultar contratos",
+                "url": "/servicios/contratos/",
+            })
 
         # HU-13: Gestión de incidencias
         if roles.intersection({

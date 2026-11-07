@@ -1,1 +1,60 @@
-{% extends "servicios/base.html" %}{% block contenido %}<h2>Nuevo contrato</h2><form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Guardar</button></form>{% endblock %}
+{% extends "base.html" %}
+
+{% block titulo %}
+Nuevo contrato | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta">
+
+    <div class="wintv-busqueda-encabezado">
+        <div>
+            <h2>Registrar nuevo contrato</h2>
+            <p>
+                Completa la información para registrar
+                un nuevo contrato de servicio de internet.
+            </p>
+        </div>
+
+        <a href="{% url 'servicios:contrato_lista' %}"
+           class="btn">
+            Volver a contratos
+        </a>
+    </div>
+
+    <div class="wintv-contrato-formulario">
+
+        <h3>Información del nuevo contrato</h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="wintv-contrato-errores">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+
+            <div class="wintv-contrato-acciones">
+
+                <a href="{% url 'servicios:contrato_lista' %}"
+                   class="btn">
+                    Cancelar
+                </a>
+
+                <button type="submit" class="btn">
+                    Registrar contrato
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}
