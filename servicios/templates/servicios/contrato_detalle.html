@@ -1,1 +1,89 @@
-{% extends "servicios/base.html" %}{% block contenido %}<h2>{{ contrato.codigo }}</h2><p>Cliente: {{ contrato.cliente }}</p><p>Documento: {{ contrato.cliente.numero_documento }}</p><p>Plan: {{ contrato.plan }}</p><p>Precio: S/ {{ contrato.plan.precio_mensual }}</p><p>Estado: {{ contrato.get_estado_display }}</p><p>Inicio: {{ contrato.fecha_inicio }}</p><p>Dirección: {{ contrato.direccion_instalacion }}</p>{% if contrato.estado != 'CANCELADO' %}<a href="{% url 'servicios:contrato_editar' contrato.pk %}">Editar</a>{% endif %}<a href="{% url 'servicios:contrato_lista' %}">Volver</a>{% endblock %}
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Detalle del contrato | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta">
+
+    <div class="wintv-busqueda-encabezado">
+        <div>
+            <h2>Detalle del contrato</h2>
+            <p>Información del contrato {{ contrato.codigo }}</p>
+        </div>
+
+        <a href="{% url 'servicios:contrato_lista' %}" class="btn">
+            Volver a contratos
+        </a>
+    </div>
+
+    <div class="wintv-busqueda-tabla-contenedor">
+
+        <table class="wintv-busqueda-tabla">
+            <thead>
+                <tr>
+                    <th>Campo</th>
+                    <th>Información</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td><strong>Código</strong></td>
+                    <td>{{ contrato.codigo }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Cliente</strong></td>
+                    <td>{{ contrato.cliente }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Documento</strong></td>
+                    <td>{{ contrato.cliente.numero_documento }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Plan contratado</strong></td>
+                    <td>{{ contrato.plan }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Precio mensual</strong></td>
+                    <td>S/ {{ contrato.plan.precio_mensual }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Estado</strong></td>
+                    <td>{{ contrato.get_estado_display }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Fecha de inicio</strong></td>
+                    <td>{{ contrato.fecha_inicio }}</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Dirección de instalación</strong></td>
+                    <td>{{ contrato.direccion_instalacion }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    {% if contrato.estado != 'CANCELADO' %}
+        <div style="margin-top: 24px;">
+            <a href="{% url 'servicios:contrato_editar' contrato.pk %}"
+               class="btn">
+                Editar contrato
+            </a>
+        </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

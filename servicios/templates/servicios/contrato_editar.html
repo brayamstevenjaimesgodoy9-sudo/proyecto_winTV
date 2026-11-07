@@ -1,1 +1,92 @@
-{% extends "servicios/base.html" %}{% block contenido %}<h2>Editar {{ contrato.codigo }}</h2><form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Guardar</button></form><form method="post" action="{% url 'servicios:contrato_cambiar_estado' contrato.pk %}">{% csrf_token %}<select name="estado">{% for valor,nombre in contrato.estados_disponibles %}<option value="{{ valor }}">{{ nombre }}</option>{% endfor %}</select><button type="submit">Cambiar estado</button></form>{% endblock %}
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Editar contrato | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta">
+
+    <div class="wintv-busqueda-encabezado">
+        <div>
+            <h2>Editar contrato {{ contrato.codigo }}</h2>
+            <p>Actualiza los datos del contrato registrado en WinTV.</p>
+        </div>
+
+        <a href="{% url 'servicios:contrato_detalle' contrato.pk %}"
+           class="btn">
+            Volver al detalle
+        </a>
+    </div>
+
+    <div class="wintv-contrato-formulario">
+
+        <h3>Información del contrato</h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="mensaje">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {{ form.as_p }}
+
+            <div class="wintv-contrato-acciones">
+                <button type="submit" class="btn">
+                    Guardar cambios
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+</section>
+
+<section class="tarjeta" style="margin-top: 24px;">
+
+    <h3>Cambiar estado del contrato</h3>
+
+    <p>
+        Selecciona el nuevo estado que tendrá este contrato.
+    </p>
+
+    <form method="post"
+          action="{% url 'servicios:contrato_cambiar_estado' contrato.pk %}">
+
+        {% csrf_token %}
+
+        <div class="wintv-contrato-campo">
+            <label for="estado_contrato">
+                Estado del contrato
+            </label>
+
+            <select name="estado"
+                    id="estado_contrato"
+                    required>
+
+                {% for valor, nombre in contrato.estados_disponibles %}
+                    <option value="{{ valor }}"
+                        {% if valor == contrato.estado %}selected{% endif %}>
+                        {{ nombre }}
+                    </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+        <div class="wintv-contrato-acciones">
+            <button type="submit" class="btn">
+                Cambiar estado
+            </button>
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

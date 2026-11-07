@@ -1,1 +1,57 @@
-{% extends "servicios/base.html" %}{% block contenido %}<h2>Contratos</h2><a href="{% url 'servicios:contrato_nuevo' %}">Nuevo contrato</a><table><tr><th>Código</th><th>Cliente</th><th>Plan</th><th>Estado</th></tr>{% for c in contratos %}<tr><td><a href="{% url 'servicios:contrato_detalle' c.pk %}">{{ c.codigo }}</a></td><td>{{ c.cliente }}</td><td>{{ c.plan.nombre }}</td><td>{{ c.get_estado_display }}</td></tr>{% empty %}<tr><td colspan="4">Sin contratos</td></tr>{% endfor %}</table>{% endblock %}
+
+{% extends "base.html" %}
+
+{% block titulo %}Consultar contratos | WinTV{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta">
+
+    <div class="wintv-busqueda-encabezado">
+        <div>
+            <h2>Consultar contratos</h2>
+            <p>Consulta los contratos registrados en WinTV.</p>
+        </div>
+
+        <a href="{% url 'servicios:contrato_nuevo' %}" class="btn">
+            + Nuevo contrato
+        </a>
+    </div>
+
+    <div class="wintv-busqueda-tabla-contenedor">
+        <table class="wintv-busqueda-tabla">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Cliente</th>
+                    <th>Plan</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for c in contratos %}
+                <tr>
+                    <td>
+                        <a href="{% url 'servicios:contrato_detalle' c.pk %}">
+                            {{ c.codigo }}
+                        </a>
+                    </td>
+                    <td>{{ c.cliente }}</td>
+                    <td>{{ c.plan.nombre }}</td>
+                    <td>{{ c.get_estado_display }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="wintv-sin-resultados">
+                        No existen contratos registrados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}
