@@ -1,0 +1,35 @@
+name: Pruebas de Almacen
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "almacen/**"
+      - ".github/workflows/almacen-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas-almacen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtener codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Verificar Django
+        run: python manage.py check
+
+      - name: Ejecutar pruebas de Almacen
+        run: python manage.py test almacen.tests --verbosity 1
