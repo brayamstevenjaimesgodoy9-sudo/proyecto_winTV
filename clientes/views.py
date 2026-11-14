@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.http import HttpResponseForbidden
 
 from almacen.models import OrdenTrabajo
 from incidencias.models import Incidencia
@@ -102,13 +103,30 @@ def buscar_clientes(request):
 @login_required
 def historial_cliente(request, cliente_id):
 
-    # Obtener el cliente solicitado
+    # VALIDAR PERMISOS DEL USUARIO
+    # Solo ADMINISTRADOR, VENDEDOR o superusuario.
+    usuario = request.user
+
+    autorizado = (
+        usuario.is_superuser
+        or usuario.groups.filter(
+            name__in=["ADMINISTRADOR", "VENDEDOR"]
+        ).exists()
+    )
+
+    if not autorizado:
+        return HttpResponseForbidden(
+            "No tienes permisos para consultar "
+            "el historial de clientes."
+        )
+
+    # OBTENER EL CLIENTE SOLICITADO
     cliente = get_object_or_404(
         Cliente,
         pk=cliente_id,
     )
 
-    # Consultar los contratos del cliente
+    # CONSULTAR LOS CONTRATOS DEL CLIENTE
     contratos = list(
         Contrato.objects.filter(
             cliente_id=cliente.pk
@@ -117,13 +135,13 @@ def historial_cliente(request, cliente_id):
         .order_by("-fecha_inicio", "-id_contrato")
     )
 
-    # Obtener los identificadores de sus contratos
+    # OBTENER IDENTIFICADORES DE CONTRATOS
     ids_contratos = [
         contrato.pk
         for contrato in contratos
     ]
 
-    # Consultar las incidencias del cliente
+    # CONSULTAR LAS INCIDENCIAS DEL CLIENTE
     incidencias = list(
         Incidencia.objects.filter(
             id_cliente=cliente.pk
@@ -132,7 +150,7 @@ def historial_cliente(request, cliente_id):
         .order_by("-fecha_reporte", "-id_incidencia")
     )
 
-    # Consultar órdenes asociadas a sus contratos
+    # CONSULTAR ÓRDENES DE TRABAJO
     ordenes = list(
         OrdenTrabajo.objects.filter(
             id_contrato__in=ids_contratos

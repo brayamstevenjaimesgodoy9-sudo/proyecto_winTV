@@ -3,11 +3,17 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import AnonymousUser
+from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase
 from django.urls import reverse
 
 from .views import historial_cliente
 
+
+# ==========================================
+# HU-04: PRUEBAS DEL HISTORIAL DEL CLIENTE
+# RESPONSABLE: JHAMPIER
+# ==========================================
 
 class HistorialClienteTests(SimpleTestCase):
 
@@ -19,11 +25,19 @@ class HistorialClienteTests(SimpleTestCase):
         )
 
     def crear_usuario(self):
+        """
+        Crea un usuario simulado con permisos
+        para consultar el historial.
+        """
         usuario = MagicMock()
         usuario.is_authenticated = True
+        usuario.is_superuser = True
         return usuario
 
     def crear_cliente(self):
+        """
+        Crea un cliente simulado para las pruebas.
+        """
         return SimpleNamespace(
             pk=3,
             id_cliente=3,
@@ -33,11 +47,19 @@ class HistorialClienteTests(SimpleTestCase):
             activo=1,
         )
 
+    # ==========================================
+    # PRUEBA 1: VERIFICAR LA URL
+    # ==========================================
+
     def test_url_historial_cliente(self):
         self.assertEqual(
             self.url,
             "/clientes/historial/3/",
         )
+
+    # ==========================================
+    # PRUEBA 2: REQUIERE INICIAR SESIÓN
+    # ==========================================
 
     def test_requiere_iniciar_sesion(self):
         request = self.factory.get(self.url)
@@ -48,11 +70,19 @@ class HistorialClienteTests(SimpleTestCase):
             cliente_id=3,
         )
 
-        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(
+            respuesta.status_code,
+            302,
+        )
+
         self.assertIn(
             "/usuarios/login/",
             respuesta["Location"],
         )
+
+    # ==========================================
+    # PRUEBA 3: CONSULTAR HISTORIAL DEL CLIENTE
+    # ==========================================
 
     @patch("clientes.views.render")
     @patch("clientes.views.OrdenTrabajo.objects")
@@ -93,7 +123,10 @@ class HistorialClienteTests(SimpleTestCase):
             cliente_id=3,
         )
 
-        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(
+            respuesta.status_code,
+            200,
+        )
 
         mock_cliente.assert_called_once()
 
@@ -111,10 +144,29 @@ class HistorialClienteTests(SimpleTestCase):
 
         contexto = mock_render.call_args.args[2]
 
-        self.assertEqual(contexto["cliente"], cliente)
-        self.assertEqual(contexto["contratos"], [contrato])
-        self.assertEqual(contexto["incidencias"], [])
-        self.assertEqual(contexto["ordenes"], [])
+        self.assertEqual(
+            contexto["cliente"],
+            cliente,
+        )
+
+        self.assertEqual(
+            contexto["contratos"],
+            [contrato],
+        )
+
+        self.assertEqual(
+            contexto["incidencias"],
+            [],
+        )
+
+        self.assertEqual(
+            contexto["ordenes"],
+            [],
+        )
+
+    # ==========================================
+    # PRUEBA 4: CLIENTE SIN HISTORIAL
+    # ==========================================
 
     @patch("clientes.views.render")
     @patch("clientes.views.OrdenTrabajo.objects")
@@ -135,30 +187,48 @@ class HistorialClienteTests(SimpleTestCase):
         mock_cliente.return_value = self.crear_cliente()
 
         mock_contratos.filter.return_value.select_related.return_value.order_by.return_value = []
+
         mock_incidencias.filter.return_value.select_related.return_value.order_by.return_value = []
+
         mock_ordenes.filter.return_value.order_by.return_value = []
 
         mock_render.return_value.status_code = 200
 
-        historial_cliente(request, cliente_id=3)
+        historial_cliente(
+            request,
+            cliente_id=3,
+        )
 
         contexto = mock_render.call_args.args[2]
 
-        self.assertEqual(contexto["contratos"], [])
-        self.assertEqual(contexto["incidencias"], [])
-        self.assertEqual(contexto["ordenes"], [])
+        self.assertEqual(
+            contexto["contratos"],
+            [],
+        )
+
+        self.assertEqual(
+            contexto["incidencias"],
+            [],
+        )
+
+        self.assertEqual(
+            contexto["ordenes"],
+            [],
+        )
 
         mock_ordenes.filter.assert_called_once_with(
             id_contrato__in=[],
         )
+
+    # ==========================================
+    # PRUEBA 5: CLIENTE INEXISTENTE
+    # ==========================================
 
     @patch("clientes.views.get_object_or_404")
     def test_cliente_inexistente(
         self,
         mock_cliente,
     ):
-        from django.http import Http404
-
         request = self.factory.get(self.url)
         request.user = self.crear_usuario()
 
@@ -171,3 +241,36 @@ class HistorialClienteTests(SimpleTestCase):
                 request,
                 cliente_id=999,
             )
+
+    # ==========================================
+    # PRUEBA 6: USUARIO SIN PERMISOS
+    # ==========================================
+
+    @patch("clientes.views.get_object_or_404")
+    def test_rechaza_usuario_sin_permisos(
+        self,
+        mock_cliente,
+    ):
+        request = self.factory.get(self.url)
+
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = False
+
+        usuario.groups.filter.return_value.exists.return_value = False
+
+        request.user = usuario
+
+        respuesta = historial_cliente(
+            request,
+            cliente_id=3,
+        )
+
+        # El sistema debe rechazar la solicitud.
+        self.assertEqual(
+            respuesta.status_code,
+            403,
+        )
+
+        # No debe consultar información del cliente.
+        mock_cliente.assert_not_called()
