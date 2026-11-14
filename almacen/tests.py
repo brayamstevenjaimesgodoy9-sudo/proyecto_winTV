@@ -240,3 +240,58 @@ class IngresoErroresTests(SimpleTestCase):
             "error de base de datos",
             mensaje.call_args.args[1],
         )
+
+
+class PermisosAlmacenTests(SimpleTestCase):
+
+    def _crear_peticion(self, superusuario=False, roles=()):
+        request = RequestFactory().get("/almacen/")
+
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = superusuario
+
+        usuario.groups.filter.side_effect = lambda **kwargs: (
+            SimpleNamespace(
+                exists=lambda: kwargs.get("name") in roles
+            )
+        )
+
+        request.user = usuario
+        return request
+
+    def _ejecutar_vista(self, request):
+        with (
+            patch("almacen.views.RegistroProductoForm"),
+            patch("almacen.views.IngresoAlmacenForm"),
+            patch("almacen.views.ConfigurarStockMinimoForm"),
+            patch(
+                "almacen.views.render",
+                return_value=HttpResponse("Almacén autorizado"),
+            ),
+        ):
+            return inicio_almacen(request)
+
+    def test_superusuario_puede_acceder(self):
+        request = self._crear_peticion(superusuario=True)
+        respuesta = self._ejecutar_vista(request)
+        self.assertEqual(respuesta.status_code, 200)
+
+    def test_administrador_puede_acceder(self):
+        request = self._crear_peticion(
+            roles=("ADMINISTRADOR",)
+        )
+        respuesta = self._ejecutar_vista(request)
+        self.assertEqual(respuesta.status_code, 200)
+
+    def test_almacen_puede_acceder(self):
+        request = self._crear_peticion(
+            roles=("ALMACEN",)
+        )
+        respuesta = self._ejecutar_vista(request)
+        self.assertEqual(respuesta.status_code, 200)
+
+    def test_usuario_sin_permisos_recibe_403(self):
+        request = self._crear_peticion()
+        respuesta = self._ejecutar_vista(request)
+        self.assertEqual(respuesta.status_code, 403)

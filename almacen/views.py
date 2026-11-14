@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 def inicio_almacen(request):
 
     if not (
-        request.user.groups.filter(name="ADMINISTRADOR").exists()
+        request.user.is_superuser
+        or request.user.groups.filter(name="ADMINISTRADOR").exists()
         or request.user.groups.filter(name="ALMACEN").exists()
     ):
         return HttpResponseForbidden(
