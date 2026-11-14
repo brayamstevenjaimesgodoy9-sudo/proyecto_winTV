@@ -1136,3 +1136,296 @@ class DevolucionVistaTests(SimpleTestCase):
         formulario.add_error.assert_called_once()
         registro.assert_called_once()
         mensaje.assert_not_called()
+
+
+# HU-12: pruebas de reportes de movimientos
+from datetime import date
+from django.utils import timezone
+from django.core.paginator import Paginator
+from .forms import ReporteMovimientosForm
+from .reportes import obtener_movimientos_reporte
+from .reportes_views import reporte_movimientos
+
+
+class ReporteMovimientosHu12Tests(SimpleTestCase):
+
+    def test_rechaza_rango_de_fechas_invalido(self):
+        formulario = ReporteMovimientosForm(data={
+            "fecha_desde": "2026-11-10",
+            "fecha_hasta": "2026-11-05",
+        })
+
+        self.assertFalse(formulario.is_valid())
+        self.assertIn("fecha_hasta", formulario.errors)
+
+    def test_consulta_aplica_todos_los_filtros(self):
+        consulta = MagicMock()
+        consulta.order_by.return_value = consulta
+        consulta.filter.return_value = consulta
+
+        with patch(
+            "almacen.reportes."
+            "MovimientoAlmacen.objects.select_related",
+            return_value=consulta,
+        ) as seleccionar:
+            resultado = obtener_movimientos_reporte({
+                "fecha_desde": date(2026, 11, 1),
+                "fecha_hasta": date(2026, 11, 10),
+                "tipo_movimiento": "DEVOLUCION",
+                "producto": SimpleNamespace(pk=7),
+            })
+
+        self.assertIs(resultado, consulta)
+        seleccionar.assert_called_once_with("producto")
+        self.assertEqual(consulta.filter.call_count, 4)
+
+        filtros = [
+            llamada.kwargs
+            for llamada in consulta.filter.call_args_list
+        ]
+
+        self.assertIn("fecha_movimiento__gte", filtros[0])
+        self.assertIn("fecha_movimiento__lte", filtros[1])
+        self.assertEqual(
+            filtros[2], {"tipo_movimiento": "DEVOLUCION"}
+        )
+        self.assertEqual(filtros[3], {"producto_id": 7})
+
+    def test_usuario_sin_permisos_recibe_403(self):
+        peticion = RequestFactory().get("/almacen/reportes/")
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = False
+        usuario.groups.filter.return_value.exists.return_value = False
+        peticion.user = usuario
+
+        with patch(
+            "almacen.reportes_views.obtener_movimientos_reporte"
+        ) as consulta:
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertEqual(respuesta.status_code, 403)
+        consulta.assert_not_called()
+
+    def test_paginacion_muestra_25_registros(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/", {"pagina": "2"}
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {}
+
+        movimientos = [
+            SimpleNamespace(pk=numero)
+            for numero in range(1, 31)
+        ]
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+                return_value=movimientos,
+            ),
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Reporte"),
+            ) as renderizar,
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        pagina = renderizar.call_args.args[2]["pagina"]
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(pagina.number, 2)
+        self.assertEqual(pagina.paginator.per_page, 25)
+        self.assertEqual(len(pagina.object_list), 5)
+        self.assertEqual(pagina.object_list[0].pk, 26)
+
+    def test_plantilla_conserva_filtros_al_paginar(self):
+        movimientos = [
+            SimpleNamespace(
+                pk=numero,
+                fecha_movimiento=timezone.now(),
+                producto=SimpleNamespace(nombre="Cable"),
+                tipo_movimiento="ENTRADA",
+                cantidad=1,
+                id_usuario=1,
+                motivo="Prueba",
+                observaciones=None,
+            )
+            for numero in range(30)
+        ]
+
+        pagina = Paginator(movimientos, 25).get_page(2)
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"tipo_movimiento": "ENTRADA", "pagina": "2"},
+        )
+        peticion.user = SimpleNamespace(is_authenticated=False)
+
+        html = render_to_string(
+            "almacen/reporte_movimientos.html",
+            {"filtro_form": "", "pagina": pagina},
+            request=peticion,
+        )
+
+        self.assertIn("Página 2", html)
+        self.assertIn("Página anterior", html)
+        self.assertIn("tipo_movimiento=ENTRADA", html)
+
+
+# HU-12: validación de exportación CSV
+import csv
+import io
+
+from .exportaciones import (
+    LIMITE_EXPORTACION,
+    exportar_movimientos_csv,
+    proteger_celda,
+)
+
+
+class ExportacionMovimientosHu12Tests(SimpleTestCase):
+
+    def test_protege_formulas_de_excel(self):
+        for valor in ("=1+1", "+COMANDO", "-FORMULA", "@FUNCION"):
+            with self.subTest(valor=valor):
+                self.assertTrue(proteger_celda(valor).startswith("'"))
+
+        self.assertTrue(
+            proteger_celda("  =1+1").startswith("'")
+        )
+        self.assertEqual(proteger_celda("Cable óptico"), "Cable óptico")
+        self.assertEqual(proteger_celda(None), "")
+
+    def test_csv_utf8_y_contenido(self):
+        movimiento = SimpleNamespace(
+            pk=15,
+            fecha_movimiento=timezone.now(),
+            producto=SimpleNamespace(
+                codigo="=1+1",
+                nombre="Cable óptico",
+            ),
+            tipo_movimiento="DEVOLUCION",
+            cantidad=3,
+            id_usuario=7,
+            motivo="Material recuperado",
+            observaciones="Sin daños",
+        )
+
+        consulta = MagicMock()
+        consulta.__getitem__.return_value.iterator.return_value = (
+            iter([movimiento])
+        )
+
+        respuesta = exportar_movimientos_csv(consulta)
+
+        self.assertTrue(respuesta.content.startswith(b"\xef\xbb\xbf"))
+
+        contenido = respuesta.content.decode("utf-8-sig")
+        filas = list(csv.reader(
+            io.StringIO(contenido),
+            delimiter=";",
+        ))
+
+        self.assertEqual(len(filas), 2)
+        self.assertEqual(filas[1][0], "15")
+        self.assertEqual(filas[1][2], "'=1+1")
+        self.assertEqual(filas[1][3], "Cable óptico")
+        self.assertEqual(filas[1][4], "DEVOLUCION")
+        self.assertEqual(filas[1][5], "3")
+
+    def test_exportacion_aplica_limite(self):
+        consulta = MagicMock()
+        consulta.__getitem__.return_value.iterator.return_value = iter([])
+
+        exportar_movimientos_csv(consulta)
+
+        consulta.__getitem__.assert_called_once_with(
+            slice(None, LIMITE_EXPORTACION)
+        )
+
+    def test_descarga_http_autorizada(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"formato": "csv", "tipo_movimiento": "ENTRADA"},
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {
+            "tipo_movimiento": "ENTRADA"
+        }
+
+        respuesta_csv = HttpResponse(
+            "CSV de prueba",
+            content_type="text/csv",
+        )
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+            ) as consultar,
+            patch(
+                "almacen.reportes_views.exportar_movimientos_csv",
+                return_value=respuesta_csv,
+            ) as exportar,
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertIs(respuesta, respuesta_csv)
+        consultar.assert_called_once_with(
+            formulario.cleaned_data
+        )
+        exportar.assert_called_once_with(consultar.return_value)
+
+    def test_filtros_invalidos_no_generan_csv(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"formato": "csv"},
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = False
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.exportar_movimientos_csv",
+            ) as exportar,
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+            ) as consultar,
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Filtros inválidos"),
+            ),
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertEqual(respuesta.status_code, 200)
+        exportar.assert_not_called()
+        consultar.assert_not_called()
