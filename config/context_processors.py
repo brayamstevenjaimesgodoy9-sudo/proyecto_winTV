@@ -44,8 +44,12 @@ def menu_wintv(request):
                 "nombre": "🔐 Usuarios",
                 "url": "/usuarios/listar/",
             })
+
         # Acceso al módulo de Almacén
-        if roles.intersection({"ADMINISTRADOR", "ALMACEN"}):
+        if roles.intersection({
+            "ADMINISTRADOR",
+            "ALMACEN",
+        }):
             menu.append({
                 "nombre": "📦 Almacén",
                 "url": "/almacen/",
@@ -77,6 +81,12 @@ def menu_wintv(request):
                 "url": "/incidencias/listar/",
             })
 
+            # HU-16: Registrar diagnóstico de averías
+            menu.append({
+                "nombre": "🩺 Diagnósticos técnicos",
+                "url": "/incidencias/diagnosticos/",
+            })
+
     else:
         menu.append({
             "nombre": "🔑 Iniciar sesión",
@@ -85,6 +95,8 @@ def menu_wintv(request):
 
     return {
         "menu_wintv": menu,
-        "roles_wintv": ", ".join(sorted(roles))
-                       if roles else "Sin rol",
+        "roles_wintv": (
+            ", ".join(sorted(roles))
+            if roles else "Sin rol"
+        ),
     }

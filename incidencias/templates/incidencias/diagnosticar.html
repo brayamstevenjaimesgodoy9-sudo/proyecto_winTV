@@ -1,0 +1,100 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Registrar diagnóstico | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Registrar diagnóstico</h1>
+            <p>
+                HU-16: Diagnóstico técnico de averías.
+            </p>
+        </div>
+    </header>
+
+    <div class="wintv-inc-informacion">
+
+        <h2>Información de la orden</h2>
+
+        <p>
+            <strong>Orden:</strong>
+            #{{ orden.id_orden }}
+        </p>
+
+        <p>
+            <strong>Incidencia:</strong>
+            #{{ orden.id_incidencia }}
+        </p>
+
+        <p>
+            <strong>Contrato:</strong>
+            {{ orden.id_contrato }}
+        </p>
+
+        <p>
+            <strong>Estado:</strong>
+            {{ orden.estado }}
+        </p>
+
+    </div>
+
+    <form method="post" class="wintv-inc-form">
+
+        {% csrf_token %}
+
+        {{ formulario.non_field_errors }}
+
+        {% for campo in formulario %}
+
+        <div style="margin-bottom:20px;">
+
+            <label for="{{ campo.id_for_label }}"
+                   style="display:block; font-weight:600; margin-bottom:8px;">
+
+                {{ campo.label }}
+
+            </label>
+
+            {{ campo }}
+
+            {% for error in campo.errors %}
+
+                <p style="color:#b42318; margin-top:6px;">
+                    {{ error }}
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+        {% endfor %}
+
+        <div class="wintv-inc-acciones">
+
+            <a href="{% url 'incidencias:diagnosticos' %}"
+               class="wintv-inc-cancelar">
+
+                Cancelar
+
+            </a>
+
+            <button type="submit"
+                    class="wintv-inc-guardar">
+
+                Guardar diagnóstico
+
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
