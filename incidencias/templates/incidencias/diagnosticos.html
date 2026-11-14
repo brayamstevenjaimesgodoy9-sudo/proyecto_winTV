@@ -1,0 +1,104 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Diagnósticos técnicos | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Diagnósticos técnicos</h1>
+            <p>
+                HU-16: Registro de diagnósticos de averías.
+            </p>
+        </div>
+    </header>
+
+    <div class="wintv-inc-informacion">
+        <h2>Órdenes de reparación</h2>
+        <p>
+            Selecciona una orden para registrar o
+            actualizar su diagnóstico técnico.
+        </p>
+    </div>
+
+    <div class="wintv-inc-tabla-contenedor">
+
+        <table class="wintv-inc-tabla">
+
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Incidencia</th>
+                    <th>Contrato</th>
+                    <th>Estado</th>
+                    <th>Diagnóstico</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for orden in ordenes %}
+
+                <tr>
+                    <td>
+                        #{{ orden.id_orden }}
+                    </td>
+
+                    <td>
+                        #{{ orden.id_incidencia }}
+                    </td>
+
+                    <td>
+                        {{ orden.id_contrato }}
+                    </td>
+
+                    <td>
+                        <span class="wintv-inc-estado">
+                            {{ orden.estado }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {% if orden.diagnostico %}
+                            Registrado
+                        {% else %}
+                            Pendiente
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'incidencias:diagnosticar' orden.pk %}"
+                           class="wintv-inc-guardar"
+                           style="display:inline-block; text-decoration:none;">
+
+                            Registrar / Editar
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="6" class="wintv-inc-vacio">
+                        No hay órdenes de reparación
+                        disponibles para diagnosticar.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
