@@ -1,8 +1,18 @@
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.forms import formset_factory
-from .models import Producto
 
+from .models import (
+    Producto,
+    OrdenTrabajo,
+    EquipoCliente,
+)
+
+
+# ==========================================
+# REGISTRO DE PRODUCTOS
+# ==========================================
 
 class RegistroProductoForm(forms.ModelForm):
     stock_minimo = forms.IntegerField(
@@ -43,6 +53,10 @@ class RegistroProductoForm(forms.ModelForm):
         }
 
 
+# ==========================================
+# INGRESO DE PRODUCTOS AL ALMACÉN
+# ==========================================
+
 class IngresoAlmacenForm(forms.Form):
     producto = forms.ModelChoiceField(
         queryset=Producto.objects.filter(activo=1),
@@ -66,9 +80,15 @@ class IngresoAlmacenForm(forms.Form):
     )
 
 
+# ==========================================
+# CONFIGURACIÓN DE STOCK MÍNIMO
+# ==========================================
+
 class ConfigurarStockMinimoForm(forms.Form):
     producto = forms.ModelChoiceField(
-        queryset=Producto.objects.filter(activo=1).order_by("nombre"),
+        queryset=Producto.objects.filter(
+            activo=1
+        ).order_by("nombre"),
         label="Producto",
     )
 
@@ -79,9 +99,10 @@ class ConfigurarStockMinimoForm(forms.Form):
     )
 
 
-
-from .models import OrdenTrabajo
-
+# ==========================================
+# SALIDA DE EQUIPOS Y MATERIALES A TÉCNICOS
+# HU-08
+# ==========================================
 
 class SalidaMaterialesForm(forms.Form):
     orden = forms.ModelChoiceField(
@@ -134,3 +155,83 @@ DetalleSalidaFormSet = formset_factory(
     max_num=10,
     validate_max=True,
 )
+
+
+# ==========================================
+# HU-09: ASOCIAR EQUIPOS ENTREGADOS
+# A UN CLIENTE
+# RESPONSABLE: JHAMPIER
+# ==========================================
+
+class AsignarEquipoClienteForm(forms.ModelForm):
+
+    class Meta:
+        model = EquipoCliente
+
+        fields = [
+            "cliente",
+            "producto",
+            "orden",
+            "numero_serie",
+            "observaciones",
+        ]
+
+        labels = {
+            "cliente": "Cliente",
+            "producto": "Equipo entregado",
+            "orden": "Orden de trabajo",
+            "numero_serie": "Número de serie",
+            "observaciones": "Observaciones",
+        }
+
+        widgets = {
+            "numero_serie": forms.TextInput(
+                attrs={
+                    "placeholder": "Ingrese el número de serie",
+                }
+            ),
+            "observaciones": forms.Textarea(
+                attrs={"rows": 3}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["cliente"].queryset = (
+            self.fields["cliente"].queryset
+            .filter(activo=1)
+            .order_by("nombres", "apellidos")
+        )
+
+        self.fields["producto"].queryset = (
+            Producto.objects.filter(
+                activo=1,
+                categoria="EQUIPO",
+            ).order_by("nombre")
+        )
+
+        self.fields["orden"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        cliente = cleaned_data.get("cliente")
+        orden = cleaned_data.get("orden")
+
+        if cliente and orden:
+            from servicios.models import Contrato
+
+            pertenece_cliente = Contrato.objects.filter(
+                pk=orden.id_contrato,
+                cliente=cliente,
+            ).exists()
+
+            if not pertenece_cliente:
+                self.add_error(
+                    "orden",
+                    "La orden seleccionada no pertenece "
+                    "a un contrato de este cliente."
+                )
+
+        return cleaned_data
