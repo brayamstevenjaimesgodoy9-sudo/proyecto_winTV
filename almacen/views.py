@@ -2,6 +2,7 @@ import logging
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
 from django.db.models import F
 from django.utils import timezone
@@ -12,8 +13,11 @@ from .forms import (
     IngresoAlmacenForm,
     RegistroProductoForm,
     ConfigurarStockMinimoForm,
+    SalidaMaterialesForm,
+    DetalleSalidaFormSet,
 )
 from .models import MovimientoAlmacen, Producto
+from .services import registrar_salida_materiales
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +38,8 @@ def inicio_almacen(request):
     producto_form = RegistroProductoForm()
     ingreso_form = IngresoAlmacenForm()
     stock_minimo_form = ConfigurarStockMinimoForm()
+    salida_form = SalidaMaterialesForm()
+    detalle_salida_formset = DetalleSalidaFormSet(prefix="detalle")
 
     if request.method == "POST":
 
@@ -164,6 +170,57 @@ def inicio_almacen(request):
                         "Verifica la conexión con Oracle."
                     )
 
+        # HU-08: REGISTRAR SALIDA A TÉCNICOS
+        elif accion == "registrar_salida":
+            salida_form = SalidaMaterialesForm(request.POST)
+            detalle_salida_formset = DetalleSalidaFormSet(
+                request.POST, prefix="detalle"
+            )
+
+            cabecera_valida = salida_form.is_valid()
+            detalles_validos = detalle_salida_formset.is_valid()
+
+            if cabecera_valida and detalles_validos:
+                detalles = [
+                    {
+                        "producto_id": fila["producto"].pk,
+                        "cantidad": fila["cantidad"],
+                    }
+                    for fila in detalle_salida_formset.cleaned_data
+                    if fila and fila.get("producto") is not None
+                ]
+
+                try:
+                    entrega = registrar_salida_materiales(
+                        orden_id=salida_form.cleaned_data["orden"].pk,
+                        tecnico_id=salida_form.cleaned_data["tecnico"].pk,
+                        detalles=detalles,
+                        usuario=request.user,
+                        observaciones=salida_form.cleaned_data[
+                            "observaciones"
+                        ],
+                    )
+
+                except ValidationError as error:
+                    salida_form.add_error(None, error)
+
+                except DatabaseError:
+                    logger.exception(
+                        "Error de Oracle al registrar salida de almacén"
+                    )
+                    salida_form.add_error(
+                        None,
+                        "No se pudo registrar la salida. "
+                        "Ocurrió un error de base de datos.",
+                    )
+
+                else:
+                    messages.success(
+                        request,
+                        f"Salida #{entrega.pk} registrada correctamente.",
+                    )
+                    return redirect("inicio_almacen")
+
     movimientos = MovimientoAlmacen.objects.select_related(
         "producto"
     ).order_by("-fecha_movimiento")
@@ -179,6 +236,8 @@ def inicio_almacen(request):
             "producto_form": producto_form,
             "ingreso_form": ingreso_form,
             "stock_minimo_form": stock_minimo_form,
+            "salida_form": salida_form,
+            "detalle_salida_formset": detalle_salida_formset,
             "movimientos": movimientos,
             "productos": productos,
         }

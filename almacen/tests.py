@@ -295,3 +295,319 @@ class PermisosAlmacenTests(SimpleTestCase):
         request = self._crear_peticion()
         respuesta = self._ejecutar_vista(request)
         self.assertEqual(respuesta.status_code, 403)
+
+
+from django.core.exceptions import PermissionDenied
+from .services import registrar_salida_materiales
+
+
+class SalidaMaterialesValidacionTests(SimpleTestCase):
+
+    def _usuario_autorizado(self):
+        return SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+            pk=1,
+        )
+
+    def test_rechaza_usuario_no_autenticado(self):
+        usuario = SimpleNamespace(is_authenticated=False)
+
+        with self.assertRaises(PermissionDenied):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[{"producto_id": 1, "cantidad": 2}],
+                usuario=usuario,
+            )
+
+    def test_rechaza_usuario_sin_permisos(self):
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = False
+        usuario.groups.filter.return_value.exists.return_value = False
+
+        with self.assertRaises(PermissionDenied):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[{"producto_id": 1, "cantidad": 2}],
+                usuario=usuario,
+            )
+
+    def test_rechaza_cantidad_negativa(self):
+        with self.assertRaisesMessage(
+            ValidationError, "entero positivo"
+        ):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[{"producto_id": 1, "cantidad": -5}],
+                usuario=self._usuario_autorizado(),
+            )
+
+    def test_rechaza_productos_repetidos(self):
+        with self.assertRaisesMessage(
+            ValidationError, "repetir un producto"
+        ):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[
+                    {"producto_id": 1, "cantidad": 2},
+                    {"producto_id": 1, "cantidad": 3},
+                ],
+                usuario=self._usuario_autorizado(),
+            )
+
+    def test_rechaza_observaciones_multibyte(self):
+        with self.assertRaisesMessage(
+            ValidationError, "500 bytes"
+        ):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[{"producto_id": 1, "cantidad": 2}],
+                usuario=self._usuario_autorizado(),
+                observaciones="á" * 300,
+            )
+
+    def test_rechaza_observaciones_demasiado_largas(self):
+        with self.assertRaisesMessage(
+            ValidationError, "500 bytes"
+        ):
+            registrar_salida_materiales(
+                orden_id=1,
+                tecnico_id=2,
+                detalles=[{"producto_id": 1, "cantidad": 2}],
+                usuario=self._usuario_autorizado(),
+                observaciones="X" * 501,
+            )
+
+
+from contextlib import ExitStack
+from .models import AsignacionTecnico
+
+
+class SalidaMaterialesFlujoTests(SimpleTestCase):
+
+    def setUp(self):
+        self.contexto = ExitStack()
+        self.addCleanup(self.contexto.close)
+
+        def simular(ruta, **opciones):
+            return self.contexto.enter_context(
+                patch(ruta, **opciones)
+            )
+
+        simular(
+            "almacen.services.transaction.atomic",
+            return_value=nullcontext(),
+        )
+
+        self.orden = simular(
+            "almacen.services.OrdenTrabajo.objects.select_for_update"
+        )
+        self.orden.return_value.get.return_value.estado = "PROGRAMADA"
+
+        self.asignacion = simular(
+            "almacen.services.AsignacionTecnico.objects.select_for_update"
+        )
+        self.asignacion.return_value.get.return_value.estado = "ASIGNADO"
+
+        usuarios = simular("almacen.services.get_user_model")
+        usuarios.return_value.objects.filter.return_value.exists.return_value = True
+
+        self.crear_entrega = simular(
+            "almacen.services.EntregaMaterial.objects.create"
+        )
+        self.crear_entrega.return_value = SimpleNamespace(pk=55)
+
+        self.productos = simular(
+            "almacen.services.Producto.objects.filter"
+        )
+        self.productos.return_value.update.return_value = 1
+
+        self.crear_detalle = simular(
+            "almacen.services.DetalleEntrega.objects.create"
+        )
+        self.crear_movimiento = simular(
+            "almacen.services.MovimientoAlmacen.objects.create"
+        )
+
+        self.usuario = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+            pk=7,
+        )
+
+    def registrar(self):
+        return registrar_salida_materiales(
+            orden_id=12,
+            tecnico_id=8,
+            detalles=[{"producto_id": 3, "cantidad": 2}],
+            usuario=self.usuario,
+        )
+
+    def test_entrega_correcta(self):
+        entrega = self.registrar()
+
+        self.assertEqual(entrega.pk, 55)
+        self.crear_entrega.assert_called_once()
+        self.crear_detalle.assert_called_once()
+        self.crear_movimiento.assert_called_once()
+
+        self.productos.assert_called_once_with(
+            pk=3,
+            activo=1,
+            stock_actual__gte=2,
+        )
+
+        expresion = self.productos.return_value.update.call_args.kwargs[
+            "stock_actual"
+        ]
+        self.assertEqual(expresion.lhs.name, "stock_actual")
+        self.assertEqual(expresion.connector, "-")
+        self.assertEqual(expresion.rhs.value, 2)
+
+        movimiento = self.crear_movimiento.call_args.kwargs
+        self.assertEqual(movimiento["tipo_movimiento"], "SALIDA")
+        self.assertEqual(movimiento["cantidad"], 2)
+        self.assertEqual(movimiento["id_usuario"], 7)
+
+    def test_stock_insuficiente(self):
+        self.productos.return_value.update.return_value = 0
+
+        with self.assertRaisesMessage(
+            ValidationError, "Stock insuficiente"
+        ):
+            self.registrar()
+
+        self.crear_detalle.assert_not_called()
+        self.crear_movimiento.assert_not_called()
+
+    def test_orden_cancelada(self):
+        self.orden.return_value.get.return_value.estado = "CANCELADA"
+
+        with self.assertRaisesMessage(
+            ValidationError, "no permite entregas"
+        ):
+            self.registrar()
+
+        self.crear_entrega.assert_not_called()
+
+    def test_tecnico_no_asignado(self):
+        self.asignacion.return_value.get.side_effect = (
+            AsignacionTecnico.DoesNotExist
+        )
+
+        with self.assertRaisesMessage(
+            ValidationError, "no está asignado"
+        ):
+            self.registrar()
+
+        self.crear_entrega.assert_not_called()
+
+
+from django.http import HttpResponse
+from django.test import RequestFactory
+from django.urls import reverse
+
+from almacen.views import inicio_almacen
+
+
+class SalidaMaterialesVistaTests(SimpleTestCase):
+
+    def setUp(self):
+        self.contexto = ExitStack()
+        self.addCleanup(self.contexto.close)
+
+        def simular(ruta, **opciones):
+            return self.contexto.enter_context(
+                patch(ruta, **opciones)
+            )
+
+        self.renderizar = simular(
+            "almacen.views.render",
+            return_value=HttpResponse("Vista simulada"),
+        )
+
+        simular("almacen.views.messages.success")
+        simular("almacen.views.Producto.objects.filter")
+        simular("almacen.views.MovimientoAlmacen.objects.select_related")
+
+        formulario = simular("almacen.views.SalidaMaterialesForm")
+        self.formulario = formulario.return_value
+        self.formulario.is_valid.return_value = True
+        self.formulario.cleaned_data = {
+            "orden": SimpleNamespace(pk=12),
+            "tecnico": SimpleNamespace(pk=8),
+            "observaciones": "Entrega de prueba",
+        }
+
+        formulario_detalles = simular(
+            "almacen.views.DetalleSalidaFormSet"
+        )
+        self.detalles = formulario_detalles.return_value
+        self.detalles.is_valid.return_value = True
+        self.detalles.cleaned_data = [
+            {
+                "producto": SimpleNamespace(pk=3),
+                "cantidad": 2,
+            }
+        ]
+
+        self.servicio = simular(
+            "almacen.views.registrar_salida_materiales",
+            return_value=SimpleNamespace(pk=55),
+        )
+
+    def solicitud(self):
+        request = RequestFactory().post(
+            "/almacen/",
+            {"accion": "registrar_salida"},
+        )
+        request.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+            pk=7,
+        )
+        return request
+
+    def test_salida_valida_invoca_servicio(self):
+        respuesta = inicio_almacen(self.solicitud())
+
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(
+            respuesta.url,
+            reverse("inicio_almacen"),
+        )
+        self.servicio.assert_called_once_with(
+            orden_id=12,
+            tecnico_id=8,
+            detalles=[
+                {"producto_id": 3, "cantidad": 2}
+            ],
+            usuario=self.servicio.call_args.kwargs["usuario"],
+            observaciones="Entrega de prueba",
+        )
+
+    def test_formulario_invalido_no_registra_salida(self):
+        self.detalles.is_valid.return_value = False
+
+        respuesta = inicio_almacen(self.solicitud())
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.servicio.assert_not_called()
+        self.renderizar.assert_called_once()
+
+    def test_error_de_validacion_se_muestra(self):
+        self.servicio.side_effect = ValidationError(
+            "Stock insuficiente."
+        )
+
+        respuesta = inicio_almacen(self.solicitud())
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.formulario.add_error.assert_called_once()
+        self.servicio.assert_called_once()

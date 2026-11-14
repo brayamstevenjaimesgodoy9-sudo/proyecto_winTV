@@ -20,6 +20,31 @@
 .almacen-panel .sin-stock { color: #b42318; font-weight: bold; }
 .almacen-panel .en-minimo { color: #a16207; font-weight: bold; }
 .almacen-panel .errorlist { color: #b42318; }
+
+.almacen-panel .salida-detalles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.almacen-panel .salida-detalle {
+    padding: 18px;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.almacen-panel .salida-detalle h4 {
+    margin: 0 0 14px;
+    color: var(--azul);
+}
+
+.almacen-panel .salida-detalle p {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 </style>
 <div class="almacen-panel">
 <h1>Gestión de Almacén WinTV</h1>
@@ -55,6 +80,46 @@
             <button class="btn" type="submit"
                     name="accion" value="configurar_stock_minimo">
                 Actualizar stock mínimo
+            </button>
+        </form>
+    </section>
+
+    <section class="tarjeta seccion">
+        <h2>Registrar salida a técnicos</h2>
+        <p>
+            Registra la entrega de equipos y materiales
+            para una orden de trabajo.
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {{ salida_form.non_field_errors }}
+            {{ salida_form.as_p }}
+
+            <h3>Productos que se entregarán</h3>
+            <p>
+                Completa al menos un producto.
+                Deja vacíos los espacios que no utilices.
+            </p>
+
+            {{ detalle_salida_formset.management_form }}
+            {{ detalle_salida_formset.non_form_errors }}
+
+            <div class="salida-detalles">
+                {% for detalle_form in detalle_salida_formset %}
+                    <div class="salida-detalle">
+                        <h4>Producto {{ forloop.counter }}</h4>
+                        {{ detalle_form.as_p }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button class="btn"
+                    type="submit"
+                    name="accion"
+                    value="registrar_salida">
+                Registrar salida de almacén
             </button>
         </form>
     </section>

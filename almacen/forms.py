@@ -1,4 +1,6 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.forms import formset_factory
 from .models import Producto
 
 
@@ -75,3 +77,60 @@ class ConfigurarStockMinimoForm(forms.Form):
         initial=20,
         label="Nuevo stock mínimo",
     )
+
+
+
+from .models import OrdenTrabajo
+
+
+class SalidaMaterialesForm(forms.Form):
+    orden = forms.ModelChoiceField(
+        queryset=OrdenTrabajo.objects.filter(
+            estado__in=["PROGRAMADA", "EN_PROCESO"]
+        ).order_by("-fecha_creacion"),
+        label="Orden de trabajo",
+        empty_label="Seleccione una orden",
+    )
+
+    tecnico = forms.ModelChoiceField(
+        queryset=get_user_model().objects.filter(
+            is_active=True,
+            groups__name="TECNICO",
+        ).distinct().order_by("username"),
+        label="Técnico responsable",
+        empty_label="Seleccione un técnico",
+    )
+
+    observaciones = forms.CharField(
+        max_length=500,
+        required=False,
+        label="Observaciones",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+
+class DetalleSalidaForm(forms.Form):
+    producto = forms.ModelChoiceField(
+        queryset=Producto.objects.filter(
+            activo=1,
+            stock_actual__gt=0,
+        ).order_by("nombre"),
+        label="Equipo o material",
+        empty_label="Seleccione un producto",
+    )
+
+    cantidad = forms.IntegerField(
+        min_value=1,
+        max_value=9999999999,
+        label="Cantidad a entregar",
+    )
+
+
+DetalleSalidaFormSet = formset_factory(
+    DetalleSalidaForm,
+    extra=3,
+    min_num=1,
+    validate_min=True,
+    max_num=10,
+    validate_max=True,
+)
