@@ -15,9 +15,13 @@ from .forms import (
     ConfigurarStockMinimoForm,
     SalidaMaterialesForm,
     DetalleSalidaFormSet,
+    DevolucionMaterialForm,
 )
 from .models import MovimientoAlmacen, Producto
-from .services import registrar_salida_materiales
+from .services import (
+    registrar_salida_materiales,
+    registrar_devolucion_materiales,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +43,7 @@ def inicio_almacen(request):
     ingreso_form = IngresoAlmacenForm()
     stock_minimo_form = ConfigurarStockMinimoForm()
     salida_form = SalidaMaterialesForm()
+    devolucion_form = DevolucionMaterialForm()
     detalle_salida_formset = DetalleSalidaFormSet(prefix="detalle")
 
     if request.method == "POST":
@@ -221,6 +226,51 @@ def inicio_almacen(request):
                     )
                     return redirect("inicio_almacen")
 
+        # HU-11: REGISTRAR DEVOLUCIÓN DE MATERIALES
+        elif accion == "registrar_devolucion":
+            devolucion_form = DevolucionMaterialForm(request.POST)
+
+            if devolucion_form.is_valid():
+                detalle = devolucion_form.cleaned_data["detalle"]
+                cantidad = devolucion_form.cleaned_data["cantidad"]
+                observaciones = devolucion_form.cleaned_data[
+                    "observaciones"
+                ]
+
+                try:
+                    entrega = registrar_devolucion_materiales(
+                        entrega_id=detalle.entrega_id,
+                        detalles=[
+                            {
+                                "detalle_id": detalle.pk,
+                                "cantidad": cantidad,
+                            }
+                        ],
+                        usuario=request.user,
+                        observaciones=observaciones,
+                    )
+
+                except ValidationError as error:
+                    devolucion_form.add_error(None, error)
+
+                except DatabaseError:
+                    logger.exception(
+                        "Error de Oracle al registrar devolución"
+                    )
+                    devolucion_form.add_error(
+                        None,
+                        "No se pudo registrar la devolución. "
+                        "Ocurrió un error de base de datos.",
+                    )
+
+                else:
+                    messages.success(
+                        request,
+                        f"Devolución de la entrega "
+                        f"#{entrega.pk} registrada correctamente.",
+                    )
+                    return redirect("inicio_almacen")
+
     movimientos = MovimientoAlmacen.objects.select_related(
         "producto"
     ).order_by("-fecha_movimiento")
@@ -237,6 +287,7 @@ def inicio_almacen(request):
             "ingreso_form": ingreso_form,
             "stock_minimo_form": stock_minimo_form,
             "salida_form": salida_form,
+            "devolucion_form": devolucion_form,
             "detalle_salida_formset": detalle_salida_formset,
             "movimientos": movimientos,
             "productos": productos,

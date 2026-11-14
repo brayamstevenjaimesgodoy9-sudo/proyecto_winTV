@@ -125,6 +125,30 @@
     </section>
 
     <section class="tarjeta seccion">
+        <h2>Registrar devolución de materiales</h2>
+        <p>
+            Registra los equipos y materiales que un técnico
+            devuelve al almacén. Solo se muestran materiales
+            con cantidades pendientes de devolución.
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {{ devolucion_form.non_field_errors }}
+            {{ devolucion_form.as_p }}
+
+            <button
+                class="btn"
+                type="submit"
+                name="accion"
+                value="registrar_devolucion">
+                Registrar devolución
+            </button>
+        </form>
+    </section>
+
+    <section class="tarjeta seccion">
         <h2>Consulta de stock disponible</h2>
         <div class="tabla-contenedor">
             <table>
