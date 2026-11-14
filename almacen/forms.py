@@ -198,12 +198,18 @@ class AsignarEquipoClienteForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # HU-09: Textos de selección en español.
+        for campo in ("cliente", "producto", "orden"):
+            self.fields[campo].empty_label = "Seleccione una opción"
+
+        # Mostrar únicamente clientes activos.
         self.fields["cliente"].queryset = (
             self.fields["cliente"].queryset
             .filter(activo=1)
             .order_by("nombres", "apellidos")
         )
 
+        # Mostrar solamente equipos activos.
         self.fields["producto"].queryset = (
             Producto.objects.filter(
                 activo=1,
@@ -211,7 +217,15 @@ class AsignarEquipoClienteForm(forms.ModelForm):
             ).order_by("nombre")
         )
 
-        self.fields["orden"].required = False
+        # HU-09: La orden es obligatoria para
+        # verificar la entrega previa del equipo.
+        self.fields["orden"].required = True
+
+        self.fields["orden"].queryset = (
+            OrdenTrabajo.objects.filter(
+                estado__in=["PROGRAMADA", "EN_PROCESO"]
+            ).order_by("-fecha_creacion")
+        )
 
     def clean(self):
         cleaned_data = super().clean()

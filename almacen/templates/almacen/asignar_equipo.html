@@ -1,0 +1,276 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Asignar equipos a clientes | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<style>
+    .hu09-contenedor {
+        max-width: 850px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .hu09-encabezado {
+        margin-bottom: 25px;
+    }
+
+    .hu09-encabezado h1 {
+        font-size: 27px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .hu09-encabezado p {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .hu09-tarjeta {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .hu09-tarjeta-titulo {
+        background: #f8fafc;
+        padding: 20px 25px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .hu09-tarjeta-titulo h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .hu09-formulario {
+        padding: 25px;
+    }
+
+    .hu09-campo {
+        margin-bottom: 20px;
+    }
+
+    .hu09-campo label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .hu09-campo input,
+    .hu09-campo select,
+    .hu09-campo textarea {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        font-size: 14px;
+        background: #ffffff;
+        color: #1e293b;
+        box-sizing: border-box;
+    }
+
+    .hu09-campo input:focus,
+    .hu09-campo select:focus,
+    .hu09-campo textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .hu09-obligatorio {
+        color: #dc2626;
+    }
+
+    .hu09-error {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .hu09-alerta {
+        background: #eff6ff;
+        color: #1e40af;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 22px;
+        font-size: 14px;
+        border: 1px solid #bfdbfe;
+    }
+
+    .hu09-alerta-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .hu09-alerta-exito {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .hu09-botones {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    .hu09-btn {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        text-align: center;
+    }
+
+    .hu09-btn-guardar {
+        background: #2563eb;
+        color: white;
+    }
+
+    .hu09-btn-guardar:hover {
+        background: #1d4ed8;
+    }
+
+    .hu09-btn-volver {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .hu09-btn-volver:hover {
+        background: #cbd5e1;
+    }
+
+    @media (max-width: 600px) {
+        .hu09-contenedor {
+            padding: 0 12px;
+            margin: 16px auto;
+        }
+
+        .hu09-formulario {
+            padding: 18px;
+        }
+
+        .hu09-botones {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="hu09-contenedor">
+
+    <div class="hu09-encabezado">
+        <h1>Asignar equipos a clientes</h1>
+        <p>
+            Registra los equipos entregados e instalados
+            a los clientes de WinTV.
+        </p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="hu09-alerta
+                {% if message.tags == 'success' %}
+                    hu09-alerta-exito
+                {% elif message.tags == 'error' %}
+                    hu09-alerta-error
+                {% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="hu09-tarjeta">
+
+        <div class="hu09-tarjeta-titulo">
+            <h2>HU-09 | Asociación de equipos</h2>
+        </div>
+
+        <div class="hu09-formulario">
+
+            {% if form.non_field_errors %}
+                <div class="hu09-alerta hu09-alerta-error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in form %}
+
+                    <div class="hu09-campo">
+
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+
+                            {% if field.field.required %}
+                                <span class="hu09-obligatorio">*</span>
+                            {% endif %}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="hu09-error">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                {% endfor %}
+
+                <div class="hu09-alerta">
+                    <strong>Importante:</strong>
+                    El equipo debe haber sido entregado
+                    previamente mediante una orden de
+                    trabajo válida.
+
+                    La asociación no volverá a descontar
+                    el stock del almacén.
+                </div>
+
+                <div class="hu09-botones">
+
+                    <button
+                        type="submit"
+                        class="hu09-btn hu09-btn-guardar">
+                        Registrar asociación
+                    </button>
+
+                    <a
+                        href="{% url 'inicio_almacen' %}"
+                        class="hu09-btn hu09-btn-volver">
+                        Volver al almacén
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

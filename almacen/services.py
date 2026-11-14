@@ -1,8 +1,12 @@
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
+
+from clientes.models import Cliente
+from servicios.models import Contrato
 
 from .models import (
     Producto,
@@ -11,8 +15,14 @@ from .models import (
     AsignacionTecnico,
     EntregaMaterial,
     DetalleEntrega,
+    EquipoCliente,
 )
 
+
+# ==========================================
+# HU-08: SALIDA DE EQUIPOS Y MATERIALES
+# A TÉCNICOS
+# ==========================================
 
 def registrar_salida_materiales(
     *,
@@ -192,3 +202,212 @@ def registrar_salida_materiales(
             )
 
         return entrega
+
+
+# ==========================================
+# HU-09: ASOCIAR EQUIPOS ENTREGADOS A CLIENTE
+# RESPONSABLE: JHAMPIER
+# ==========================================
+
+def registrar_equipo_cliente(
+    *,
+    cliente_id,
+    producto_id,
+    orden_id,
+    numero_serie,
+    usuario,
+    observaciones="",
+):
+    """
+    Asocia un equipo entregado previamente a un cliente.
+
+    Reglas:
+    - El usuario debe tener permisos.
+    - El cliente debe estar activo.
+    - El producto debe ser un equipo activo.
+    - La orden debe pertenecer al cliente.
+    - La orden debe estar PROGRAMADA o EN_PROCESO.
+    - Debe existir una entrega previa del equipo.
+    - No se permite superar la cantidad disponible.
+    - El número de serie no puede estar duplicado.
+    - Se actualiza la cantidad utilizada.
+    - No se descuenta nuevamente el stock.
+    """
+
+    # VALIDACIÓN DE PERMISOS
+    if not usuario.is_authenticated or not (
+        usuario.is_superuser
+        or usuario.groups.filter(
+            name__in=["ADMINISTRADOR", "ALMACEN"]
+        ).exists()
+    ):
+        raise PermissionDenied(
+            "No tienes permisos para asociar equipos."
+        )
+
+    # VALIDACIÓN DE IDENTIFICADORES
+    for nombre, valor in (
+        ("Cliente", cliente_id),
+        ("Producto", producto_id),
+        ("Orden", orden_id),
+    ):
+        if (
+            not isinstance(valor, int)
+            or isinstance(valor, bool)
+            or valor <= 0
+        ):
+            raise ValidationError(
+                f"{nombre} no válido."
+            )
+
+    # VALIDACIÓN DEL NÚMERO DE SERIE
+    if not isinstance(numero_serie, str):
+        raise ValidationError(
+            "El número de serie no es válido."
+        )
+
+    numero_serie = numero_serie.strip()
+
+    if len(numero_serie) > 100:
+        raise ValidationError(
+            "El número de serie supera los 100 caracteres."
+        )
+
+    # VALIDACIÓN DE OBSERVACIONES
+    if not isinstance(observaciones, str):
+        raise ValidationError(
+            "Las observaciones no son válidas."
+        )
+
+    observaciones = observaciones.strip()
+
+    if len(observaciones.encode("utf-8")) > 500:
+        raise ValidationError(
+            "Las observaciones superan el límite permitido."
+        )
+
+    # TRANSACCIÓN ATÓMICA
+    with transaction.atomic():
+
+        # VERIFICAR ORDEN DE TRABAJO
+        try:
+            orden = (
+                OrdenTrabajo.objects
+                .select_for_update()
+                .get(pk=orden_id)
+            )
+        except OrdenTrabajo.DoesNotExist:
+            raise ValidationError(
+                "La orden de trabajo no existe."
+            )
+
+        # HU-09: VALIDAR ESTADO DE LA ORDEN
+        if orden.estado not in ("PROGRAMADA", "EN_PROCESO"):
+            raise ValidationError(
+                "La orden de trabajo no permite "
+                "asociar equipos en su estado actual."
+            )
+
+        # VERIFICAR CLIENTE ACTIVO
+        if not Cliente.objects.filter(
+            pk=cliente_id,
+            activo=1,
+        ).exists():
+            raise ValidationError(
+                "El cliente no existe o está inactivo."
+            )
+
+        # VERIFICAR EQUIPO ACTIVO
+        if not Producto.objects.filter(
+            pk=producto_id,
+            activo=1,
+            categoria="EQUIPO",
+        ).exists():
+            raise ValidationError(
+                "El producto no es un equipo activo."
+            )
+
+        # VALIDAR RELACIÓN ENTRE ORDEN Y CLIENTE
+        if not Contrato.objects.filter(
+            pk=orden.id_contrato,
+            cliente_id=cliente_id,
+        ).exists():
+            raise ValidationError(
+                "La orden no pertenece a un contrato "
+                "del cliente seleccionado."
+            )
+
+        # EVITAR NÚMEROS DE SERIE DUPLICADOS
+        if numero_serie and EquipoCliente.objects.filter(
+            numero_serie=numero_serie
+        ).exists():
+            raise ValidationError(
+                "Este número de serie ya está registrado."
+            )
+
+        # BUSCAR ENTREGAS PREVIAS DEL PRODUCTO
+        detalles = list(
+            DetalleEntrega.objects
+            .select_for_update()
+            .filter(
+                entrega__orden_id=orden_id,
+                entrega__estado="ENTREGADA",
+                producto_id=producto_id,
+            )
+            .order_by("id_detalle")
+        )
+
+        if not detalles:
+            raise ValidationError(
+                "No existe una entrega registrada "
+                "de este equipo para la orden."
+            )
+
+        # ENCONTRAR UNA ENTREGA CON UNIDADES DISPONIBLES
+        detalle_disponible = None
+
+        for detalle in detalles:
+            disponible = (
+                detalle.cantidad_entregada
+                - detalle.cantidad_utilizada
+                - detalle.cantidad_devuelta
+            )
+
+            if disponible > 0:
+                detalle_disponible = detalle
+                break
+
+        if detalle_disponible is None:
+            raise ValidationError(
+                "No hay equipos disponibles para asociar."
+            )
+
+        # REGISTRAR EL EQUIPO ASOCIADO AL CLIENTE
+        equipo = EquipoCliente.objects.create(
+            cliente_id=cliente_id,
+            producto_id=producto_id,
+            orden_id=orden_id,
+            numero_serie=numero_serie or None,
+            fecha_asignacion=timezone.now(),
+            estado="INSTALADO",
+            observaciones=observaciones or None,
+        )
+
+        # ACTUALIZAR LA CANTIDAD UTILIZADA
+        actualizados = DetalleEntrega.objects.filter(
+            pk=detalle_disponible.pk,
+            cantidad_entregada__gt=(
+                F("cantidad_utilizada")
+                + F("cantidad_devuelta")
+            ),
+        ).update(
+            cantidad_utilizada=F("cantidad_utilizada") + 1
+        )
+
+        if actualizados != 1:
+            raise ValidationError(
+                "La disponibilidad del equipo cambió. "
+                "Intenta nuevamente."
+            )
+
+        return equipo
