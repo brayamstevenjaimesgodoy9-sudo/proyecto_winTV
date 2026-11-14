@@ -1,6 +1,9 @@
+import logging
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import DatabaseError, transaction
+from django.db.models import F
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
@@ -11,6 +14,9 @@ from .forms import (
     ConfigurarStockMinimoForm,
 )
 from .models import MovimientoAlmacen, Producto
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -52,12 +58,14 @@ def inicio_almacen(request):
                     )
                     return redirect("inicio_almacen")
 
-                except Exception:
+                except DatabaseError:
+                    logger.exception(
+                        "Error de base de datos al registrar producto"
+                    )
                     messages.error(
                         request,
                         "No se pudo registrar el producto. "
-                        "Verifica que el código no esté repetido "
-                        "y que los datos sean correctos."
+                        "Ocurrió un error de base de datos."
                     )
 
         # REGISTRAR INGRESO DE PRODUCTOS
@@ -75,8 +83,17 @@ def inicio_almacen(request):
                 try:
                     with transaction.atomic():
 
-                        producto.stock_actual += cantidad
-                        producto.save(update_fields=["stock_actual"])
+                        actualizados = Producto.objects.filter(
+                            pk=producto.pk,
+                            activo=1,
+                        ).update(
+                            stock_actual=F("stock_actual") + cantidad
+                        )
+
+                        if actualizados != 1:
+                            raise ValueError(
+                                "El producto ya no está disponible."
+                            )
 
                         MovimientoAlmacen.objects.create(
                             producto=producto,
@@ -94,11 +111,21 @@ def inicio_almacen(request):
                     )
                     return redirect("inicio_almacen")
 
-                except Exception:
+                except ValueError:
                     messages.error(
                         request,
                         "No se pudo registrar el ingreso. "
-                        "Verifica la conexión y las tablas de Oracle."
+                        "El producto ya no está disponible."
+                    )
+
+                except DatabaseError:
+                    logger.exception(
+                        "Error de base de datos al registrar ingreso"
+                    )
+                    messages.error(
+                        request,
+                        "No se pudo registrar el ingreso. "
+                        "Ocurrió un error de base de datos."
                     )
 
         # HU-10: ACTUALIZAR STOCK MINIMO
