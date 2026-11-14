@@ -44,6 +44,13 @@ def menu_wintv(request):
                 "nombre": "🔐 Usuarios",
                 "url": "/usuarios/listar/",
             })
+        # Acceso al módulo de Almacén
+        if roles.intersection({"ADMINISTRADOR", "ALMACEN"}):
+            menu.append({
+                "nombre": "📦 Almacén",
+                "url": "/almacen/",
+            })
+
         # HU-02: Gestión de contratos
         if roles.intersection({
             "ADMINISTRADOR",
