@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block titulo %}Reportes de almacén | WinTV{% endblock %}
+
+{% block contenido %}
+<style>
+.reporte-panel {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.reporte-panel h1,
+.reporte-panel h2 {
+    color: var(--azul);
+}
+
+.reporte-descripcion {
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.reporte-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.reporte-form > p {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+}
+
+.reporte-form input,
+.reporte-form select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+}
+
+.reporte-form input:focus-visible,
+.reporte-form select:focus-visible {
+    outline: 2px solid var(--azul);
+    outline-offset: 2px;
+}
+
+.reporte-acciones {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.reporte-enlace {
+    color: var(--azul);
+    text-decoration: underline;
+}
+
+.reporte-tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.reporte-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reporte-tabla th,
+.reporte-tabla td {
+    padding: 12px;
+    border-bottom: 1px solid var(--borde);
+    text-align: left;
+    vertical-align: top;
+}
+
+.reporte-tabla th {
+    background: var(--azul);
+    color: #fff;
+    white-space: nowrap;
+}
+
+.reporte-tabla tbody tr:hover {
+    background: #f8fafc;
+}
+
+.reporte-tipo {
+    font-weight: 600;
+}
+
+.reporte-paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.reporte-paginacion a {
+    color: var(--azul);
+    text-decoration: underline;
+}
+
+.reporte-vacio {
+    padding: 20px;
+    color: #64748b;
+    text-align: center;
+}
+
+.reporte-panel .errorlist {
+    color: #b42318;
+}
+
+@media (max-width: 640px) {
+    .reporte-panel h1 {
+        font-size: 1.6rem;
+    }
+
+    .reporte-tabla th,
+    .reporte-tabla td {
+        padding: 9px;
+    }
+}
+</style>
+
+<div class="reporte-panel">
+    <header>
+        <h1>Reportes de movimientos de almacén</h1>
+        <p class="reporte-descripcion">
+            Consulta entradas, salidas, devoluciones y ajustes
+            del inventario de WinTV.
+        </p>
+    </header>
+
+    <section class="tarjeta seccion">
+        <h2>Filtros de búsqueda</h2>
+
+        <form method="GET"
+              action="{% url 'reporte_movimientos' %}"
+              class="reporte-form">
+
+            {{ filtro_form.as_p }}
+
+            <div class="reporte-acciones">
+                <button type="submit" class="btn">
+                    Aplicar filtros
+                </button>
+
+                <a class="reporte-enlace"
+                   href="{% url 'reporte_movimientos' %}">
+                    Limpiar filtros
+                </a>
+
+                <a class="reporte-enlace"
+                   href="{% querystring formato='csv' pagina=None %}">
+                    Exportar CSV (máximo 10 000 movimientos)
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="tarjeta seccion">
+        <h2>Resultados del reporte</h2>
+
+        {% if pagina %}
+            <p>
+                Total de movimientos encontrados:
+                <strong>{{ pagina.paginator.count }}</strong>
+            </p>
+
+            <div class="reporte-tabla-contenedor">
+                <table class="reporte-tabla">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Producto</th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Usuario ID</th>
+                            <th scope="col">Motivo</th>
+                            <th scope="col">Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movimiento in pagina %}
+                            <tr>
+                                <td>{{ movimiento.pk }}</td>
+                                <td>
+                                    {{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}
+                                </td>
+                                <td>
+                                    {{ movimiento.producto.nombre }}
+                                </td>
+                                <td class="reporte-tipo">
+                                    {{ movimiento.tipo_movimiento }}
+                                </td>
+                                <td>{{ movimiento.cantidad }}</td>
+                                <td>{{ movimiento.id_usuario }}</td>
+                                <td>{{ movimiento.motivo }}</td>
+                                <td>
+                                    {{ movimiento.observaciones|default:"-" }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="reporte-vacio">
+                                    No se encontraron movimientos
+                                    con los filtros seleccionados.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if pagina.paginator.num_pages > 1 %}
+                <nav class="reporte-paginacion"
+                     aria-label="Paginación del reporte">
+
+                    <div>
+                        {% if pagina.has_previous %}
+                            <a href="{% querystring pagina=pagina.previous_page_number %}">
+                                Página anterior
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <span>
+                        Página {{ pagina.number }}
+                        de {{ pagina.paginator.num_pages }}
+                    </span>
+
+                    <div>
+                        {% if pagina.has_next %}
+                            <a href="{% querystring pagina=pagina.next_page_number %}">
+                                Página siguiente
+                            </a>
+                        {% endif %}
+                    </div>
+                </nav>
+            {% endif %}
+        {% else %}
+            <p class="reporte-vacio">
+                Corrige los filtros indicados para consultar el reporte.
+            </p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -204,3 +204,50 @@ class DevolucionMaterialForm(forms.Form):
                 )
 
         return datos
+
+class ReporteMovimientosForm(forms.Form):
+    fecha_desde = forms.DateField(
+        required=False,
+        label="Fecha desde",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    fecha_hasta = forms.DateField(
+        required=False,
+        label="Fecha hasta",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    tipo_movimiento = forms.ChoiceField(
+        required=False,
+        label="Tipo de movimiento",
+        choices=[
+            ("", "Todos los movimientos"),
+            ("ENTRADA", "Entradas"),
+            ("SALIDA", "Salidas"),
+            ("DEVOLUCION", "Devoluciones"),
+            ("AJUSTE", "Ajustes"),
+        ],
+    )
+
+    producto = forms.ModelChoiceField(
+        queryset=Producto.objects.all().order_by("nombre"),
+        required=False,
+        label="Producto",
+        empty_label="Todos los productos",
+    )
+
+    def clean(self):
+        datos = super().clean()
+
+        desde = datos.get("fecha_desde")
+        hasta = datos.get("fecha_hasta")
+
+        if desde and hasta and desde > hasta:
+            self.add_error(
+                "fecha_hasta",
+                "La fecha final no puede ser anterior "
+                "a la fecha inicial.",
+            )
+
+        return datos
