@@ -611,3 +611,254 @@ class SalidaMaterialesVistaTests(SimpleTestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.formulario.add_error.assert_called_once()
         self.servicio.assert_called_once()
+
+
+# HU-11: pruebas del registro de devoluciones
+from contextlib import ExitStack, nullcontext
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.test import SimpleTestCase
+
+from .models import DetalleEntrega
+from .services import registrar_devolucion_materiales
+
+
+class DevolucionMaterialesTests(SimpleTestCase):
+
+    def setUp(self):
+        self.contexto = ExitStack()
+        self.addCleanup(self.contexto.close)
+
+        def simular(ruta):
+            return self.contexto.enter_context(patch(ruta))
+
+        simular(
+            "almacen.services.transaction.atomic"
+        ).return_value = nullcontext()
+
+        self.entregas = simular(
+            "almacen.services.EntregaMaterial.objects.select_for_update"
+        )
+        self.entregas.return_value.get.return_value = SimpleNamespace(
+            pk=4, estado="ENTREGADA"
+        )
+
+        self.detalles = simular(
+            "almacen.services.DetalleEntrega.objects.select_for_update"
+        )
+        self.detalles.return_value.get.return_value = SimpleNamespace(
+            producto_id=3,
+            cantidad_entregada=8,
+            cantidad_utilizada=2,
+            cantidad_devuelta=1,
+        )
+
+        self.actualizar_detalle = simular(
+            "almacen.services.DetalleEntrega.objects.filter"
+        )
+        self.actualizar_detalle.return_value.update.return_value = 1
+
+        self.actualizar_producto = simular(
+            "almacen.services.Producto.objects.filter"
+        )
+        self.actualizar_producto.return_value.update.return_value = 1
+
+        self.movimientos = simular(
+            "almacen.services.MovimientoAlmacen.objects.create"
+        )
+
+        self.usuario = SimpleNamespace(
+            pk=7,
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+    def devolver(self, cantidad=2, detalles=None, usuario=None):
+        return registrar_devolucion_materiales(
+            entrega_id=4,
+            detalles=detalles if detalles is not None else [
+                {"detalle_id": 10, "cantidad": cantidad}
+            ],
+            usuario=usuario if usuario is not None else self.usuario,
+        )
+
+    def test_devolucion_correcta(self):
+        resultado = self.devolver()
+
+        self.assertEqual(resultado.pk, 4)
+        self.actualizar_detalle.return_value.update.assert_called_once()
+        self.actualizar_producto.return_value.update.assert_called_once()
+        self.movimientos.assert_called_once()
+
+        datos = self.movimientos.call_args.kwargs
+        self.assertEqual(datos["tipo_movimiento"], "DEVOLUCION")
+        self.assertEqual(datos["cantidad"], 2)
+        self.assertEqual(datos["producto_id"], 3)
+
+    def test_rechaza_cantidad_excesiva(self):
+        with self.assertRaises(ValidationError):
+            self.devolver(cantidad=6)
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_detalles_duplicados(self):
+        with self.assertRaises(ValidationError):
+            self.devolver(detalles=[
+                {"detalle_id": 10, "cantidad": 1},
+                {"detalle_id": 10, "cantidad": 1},
+            ])
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_entrega_finalizada(self):
+        self.entregas.return_value.get.return_value.estado = (
+            "FINALIZADA"
+        )
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_detalle_de_otra_entrega(self):
+        self.detalles.return_value.get.side_effect = (
+            DetalleEntrega.DoesNotExist
+        )
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_fallo_de_actualizacion_stock(self):
+        self.actualizar_producto.return_value.update.return_value = 0
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_usuario_sin_permisos(self):
+        usuario = SimpleNamespace(
+            is_authenticated=False,
+            is_superuser=False,
+        )
+
+        with self.assertRaises(PermissionDenied):
+            self.devolver(usuario=usuario)
+
+        self.movimientos.assert_not_called()
+
+class DevolucionVistaTests(SimpleTestCase):
+    """Pruebas HTTP de la integración de HU-11."""
+
+    def ejecutar(self, valido=True, error=None):
+        request = RequestFactory().post(
+            "/almacen/",
+            {"accion": "registrar_devolucion"},
+        )
+
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = True
+        usuario.pk = 7
+        request.user = usuario
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = valido
+        formulario.cleaned_data = {
+            "detalle": SimpleNamespace(pk=10, entrega_id=4),
+            "cantidad": 2,
+            "observaciones": "Material no utilizado",
+        }
+
+        with (
+            patch(
+                "almacen.views.DevolucionMaterialForm",
+                return_value=formulario,
+            ) as clase_formulario,
+            patch(
+                "almacen.views.registrar_devolucion_materiales"
+            ) as servicio,
+            patch("almacen.views.messages.success") as mensaje,
+            patch(
+                "almacen.views.logger.exception"
+            ) as registrar_error,
+            patch(
+                "almacen.views.render",
+                return_value=HttpResponse("Almacén"),
+            ),
+        ):
+            servicio.return_value = SimpleNamespace(pk=4)
+            servicio.side_effect = error
+
+            respuesta = inicio_almacen(request)
+
+            return (
+                respuesta,
+                formulario,
+                clase_formulario,
+                servicio,
+                mensaje,
+                registrar_error,
+            )
+
+    def test_devolucion_valida_invoca_servicio(self):
+        respuesta, formulario, clase, servicio, mensaje, _ = (
+            self.ejecutar()
+        )
+
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(clase.call_count, 2)
+        self.assertEqual(
+            clase.call_args.args[0].get("accion"),
+            "registrar_devolucion",
+        )
+        servicio.assert_called_once()
+
+        datos = servicio.call_args.kwargs
+        self.assertEqual(datos["entrega_id"], 4)
+        self.assertEqual(
+            datos["detalles"],
+            [{"detalle_id": 10, "cantidad": 2}],
+        )
+        self.assertEqual(datos["usuario"].pk, 7)
+        mensaje.assert_called_once()
+
+    def test_formulario_invalido_no_registra(self):
+        respuesta, _, _, servicio, mensaje, _ = (
+            self.ejecutar(valido=False)
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_not_called()
+        mensaje.assert_not_called()
+
+    def test_error_de_validacion_se_muestra(self):
+        respuesta, formulario, _, servicio, mensaje, _ = (
+            self.ejecutar(
+                error=ValidationError(
+                    "Cantidad superior a la disponible."
+                )
+            )
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_called_once()
+        formulario.add_error.assert_called_once()
+        mensaje.assert_not_called()
+
+    def test_error_de_oracle_se_controla(self):
+        respuesta, formulario, _, servicio, mensaje, registro = (
+            self.ejecutar(
+                error=DatabaseError("Error simulado de Oracle")
+            )
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_called_once()
+        formulario.add_error.assert_called_once()
+        registro.assert_called_once()
+        mensaje.assert_not_called()

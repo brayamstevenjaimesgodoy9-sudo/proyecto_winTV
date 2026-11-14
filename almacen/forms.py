@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.forms import formset_factory
-from .models import Producto
+from django.db.models import F
+from .models import Producto, DetalleEntrega
 
 
 class RegistroProductoForm(forms.ModelForm):
@@ -134,3 +135,72 @@ DetalleSalidaFormSet = formset_factory(
     max_num=10,
     validate_max=True,
 )
+
+class DetalleDevolucionField(forms.ModelChoiceField):
+    def label_from_instance(self, detalle):
+        pendiente = (
+            detalle.cantidad_entregada
+            - detalle.cantidad_utilizada
+            - detalle.cantidad_devuelta
+        )
+        return (
+            f"Entrega #{detalle.entrega_id} | "
+            f"{detalle.producto.codigo} - {detalle.producto.nombre} | "
+            f"Pendiente: {pendiente}"
+        )
+
+
+class DevolucionMaterialForm(forms.Form):
+    detalle = DetalleDevolucionField(
+        queryset=DetalleEntrega.objects.none(),
+        label="Material entregado",
+        empty_label="Seleccione un material pendiente",
+    )
+
+    cantidad = forms.IntegerField(
+        min_value=1,
+        max_value=9999999999,
+        label="Cantidad a devolver",
+    )
+
+    observaciones = forms.CharField(
+        required=False,
+        max_length=500,
+        label="Observaciones",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["detalle"].queryset = (
+            DetalleEntrega.objects
+            .filter(
+                entrega__estado__in=["ENTREGADA", "PARCIAL"]
+            )
+            .annotate(
+                pendiente=(
+                    F("cantidad_entregada")
+                    - F("cantidad_utilizada")
+                    - F("cantidad_devuelta")
+                )
+            )
+            .filter(pendiente__gt=0)
+            .select_related("producto")
+            .order_by("-entrega__fecha_entrega", "pk")
+        )
+
+    def clean(self):
+        datos = super().clean()
+        detalle = datos.get("detalle")
+        cantidad = datos.get("cantidad")
+
+        if detalle is not None and cantidad is not None:
+            if cantidad > detalle.pendiente:
+                self.add_error(
+                    "cantidad",
+                    "La cantidad supera las unidades "
+                    "pendientes de devolución.",
+                )
+
+        return datos
