@@ -1,11 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
-from .forms import IngresoAlmacenForm, RegistroProductoForm
+from .forms import (
+    IngresoAlmacenForm,
+    RegistroProductoForm,
+    ConfigurarStockMinimoForm,
+)
 from .models import MovimientoAlmacen, Producto
 
 
@@ -22,6 +26,7 @@ def inicio_almacen(request):
 
     producto_form = RegistroProductoForm()
     ingreso_form = IngresoAlmacenForm()
+    stock_minimo_form = ConfigurarStockMinimoForm()
 
     if request.method == "POST":
 
@@ -37,7 +42,7 @@ def inicio_almacen(request):
                     with transaction.atomic():
                         producto = producto_form.save(commit=False)
                         producto.stock_actual = 0
-                        producto.stock_minimo = 0
+                        producto.stock_minimo = producto_form.cleaned_data["stock_minimo"]
                         producto.activo = 1
                         producto.save()
 
@@ -96,6 +101,41 @@ def inicio_almacen(request):
                         "Verifica la conexión y las tablas de Oracle."
                     )
 
+        # HU-10: ACTUALIZAR STOCK MINIMO
+        elif accion == "configurar_stock_minimo":
+
+            stock_minimo_form = ConfigurarStockMinimoForm(request.POST)
+
+            if stock_minimo_form.is_valid():
+                producto = stock_minimo_form.cleaned_data["producto"]
+                nuevo_minimo = stock_minimo_form.cleaned_data["stock_minimo"]
+
+                try:
+                    with transaction.atomic():
+                        actualizados = Producto.objects.filter(
+                            pk=producto.pk,
+                            activo=1,
+                        ).update(stock_minimo=nuevo_minimo)
+
+                    if actualizados == 1:
+                        messages.success(
+                            request,
+                            "Stock mínimo actualizado correctamente."
+                        )
+                        return redirect("inicio_almacen")
+
+                    stock_minimo_form.add_error(
+                        "producto",
+                        "El producto seleccionado ya no está disponible."
+                    )
+
+                except DatabaseError:
+                    messages.error(
+                        request,
+                        "No se pudo actualizar el stock mínimo. "
+                        "Verifica la conexión con Oracle."
+                    )
+
     movimientos = MovimientoAlmacen.objects.select_related(
         "producto"
     ).order_by("-fecha_movimiento")
@@ -110,6 +150,7 @@ def inicio_almacen(request):
         {
             "producto_form": producto_form,
             "ingreso_form": ingreso_form,
+            "stock_minimo_form": stock_minimo_form,
             "movimientos": movimientos,
             "productos": productos,
         }

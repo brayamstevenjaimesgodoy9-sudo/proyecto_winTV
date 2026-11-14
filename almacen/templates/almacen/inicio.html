@@ -18,6 +18,7 @@
 .almacen-panel th { background: var(--azul); color: white; }
 .almacen-panel .stock { color: #15803d; font-weight: bold; }
 .almacen-panel .sin-stock { color: #b42318; font-weight: bold; }
+.almacen-panel .en-minimo { color: #a16207; font-weight: bold; }
 .almacen-panel .errorlist { color: #b42318; }
 </style>
 <div class="almacen-panel">
@@ -45,6 +46,20 @@
     </section>
 
     <section class="tarjeta seccion">
+        <h2>Configurar stock mínimo</h2>
+        <p>Actualiza la cantidad mínima de seguridad de un producto.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ stock_minimo_form.as_p }}
+            <button class="btn" type="submit"
+                    name="accion" value="configurar_stock_minimo">
+                Actualizar stock mínimo
+            </button>
+        </form>
+    </section>
+
+    <section class="tarjeta seccion">
         <h2>Consulta de stock disponible</h2>
         <div class="tabla-contenedor">
             <table>
@@ -55,7 +70,9 @@
                         <th>Descripción</th>
                         <th>Categoría</th>
                         <th>Unidad de medida</th>
-                        <th>Cantidad disponible</th>
+                        <th>Stock actual</th>
+                        <th>Stock mínimo</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,17 +83,23 @@
                         <td>{{ producto.descripcion|default:"-" }}</td>
                         <td>{{ producto.categoria }}</td>
                         <td>{{ producto.unidad_medida }}</td>
+                        <td>{{ producto.stock_actual }}</td>
+                        <td>{{ producto.stock_minimo }}</td>
                         <td>
-                            {% if producto.stock_actual > 0 %}
-                                <span class="stock">{{ producto.stock_actual }}</span>
+                            {% if producto.stock_actual == 0 %}
+                                <span class="sin-stock">Agotado</span>
+                            {% elif producto.stock_actual < producto.stock_minimo %}
+                                <span class="sin-stock">Bajo mínimo</span>
+                            {% elif producto.stock_actual == producto.stock_minimo %}
+                                <span class="en-minimo">En el mínimo</span>
                             {% else %}
-                                <span class="sin-stock">0</span>
+                                <span class="stock">Normal</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6">No hay productos registrados en el almacén.</td>
+                        <td colspan="8">No hay productos registrados en el almacén.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

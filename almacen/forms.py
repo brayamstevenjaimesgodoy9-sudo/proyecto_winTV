@@ -3,6 +3,13 @@ from .models import Producto
 
 
 class RegistroProductoForm(forms.ModelForm):
+    stock_minimo = forms.IntegerField(
+        min_value=0,
+        initial=20,
+        label="Stock mínimo",
+        help_text="Valor predeterminado: 20 unidades. Puedes modificarlo.",
+    )
+
     categoria = forms.ChoiceField(
         choices=[
             ("EQUIPO", "Equipo"),
@@ -19,6 +26,7 @@ class RegistroProductoForm(forms.ModelForm):
             "descripcion",
             "categoria",
             "unidad_medida",
+            "stock_minimo",
         ]
 
         labels = {
@@ -53,4 +61,17 @@ class IngresoAlmacenForm(forms.Form):
         required=False,
         widget=forms.Textarea(attrs={"rows": 3}),
         label="Observaciones"
+    )
+
+
+class ConfigurarStockMinimoForm(forms.Form):
+    producto = forms.ModelChoiceField(
+        queryset=Producto.objects.filter(activo=1).order_by("nombre"),
+        label="Producto",
+    )
+
+    stock_minimo = forms.IntegerField(
+        min_value=0,
+        initial=20,
+        label="Nuevo stock mínimo",
     )
