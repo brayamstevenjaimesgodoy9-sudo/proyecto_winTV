@@ -1,8 +1,9 @@
+
 import logging
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.db import DatabaseError, transaction
 from django.db.models import F
 from django.utils import timezone
@@ -15,9 +16,13 @@ from .forms import (
     ConfigurarStockMinimoForm,
     SalidaMaterialesForm,
     DetalleSalidaFormSet,
+    AsignarEquipoClienteForm,
 )
 from .models import MovimientoAlmacen, Producto
-from .services import registrar_salida_materiales
+from .services import (
+    registrar_salida_materiales,
+    registrar_equipo_cliente,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -240,5 +245,76 @@ def inicio_almacen(request):
             "detalle_salida_formset": detalle_salida_formset,
             "movimientos": movimientos,
             "productos": productos,
+        }
+    )
+
+
+# ==========================================
+# HU-09: ASOCIAR EQUIPOS ENTREGADOS A CLIENTE
+# RESPONSABLE: JHAMPIER
+# ==========================================
+
+@login_required
+def asignar_equipo_cliente(request):
+
+    if not (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name__in=["ADMINISTRADOR", "ALMACEN"]
+        ).exists()
+    ):
+        return HttpResponseForbidden(
+            "No tienes permisos para asociar equipos."
+        )
+
+    if request.method == "POST":
+        form = AsignarEquipoClienteForm(request.POST)
+
+        if form.is_valid():
+            datos = form.cleaned_data
+
+            try:
+                equipo = registrar_equipo_cliente(
+                    cliente_id=datos["cliente"].pk,
+                    producto_id=datos["producto"].pk,
+                    orden_id=datos["orden"].pk,
+                    numero_serie=datos["numero_serie"] or "",
+                    usuario=request.user,
+                    observaciones=datos["observaciones"] or "",
+                )
+
+            except ValidationError as error:
+                form.add_error(None, error)
+
+            except PermissionDenied:
+                return HttpResponseForbidden(
+                    "No tienes permisos para realizar esta operación."
+                )
+
+            except DatabaseError:
+                logger.exception(
+                    "Error de Oracle al asociar equipo con cliente"
+                )
+                form.add_error(
+                    None,
+                    "No se pudo registrar la asociación. "
+                    "Ocurrió un error de base de datos."
+                )
+
+            else:
+                messages.success(
+                    request,
+                    f"Equipo #{equipo.pk} asociado correctamente."
+                )
+                return redirect("asignar_equipo_cliente")
+
+    else:
+        form = AsignarEquipoClienteForm()
+
+    return render(
+        request,
+        "almacen/asignar_equipo.html",
+        {
+            "form": form,
         }
     )

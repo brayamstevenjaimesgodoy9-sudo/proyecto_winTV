@@ -45,15 +45,22 @@ def menu_wintv(request):
                 "url": "/usuarios/listar/",
             })
 
-        # Acceso al módulo de Almacén
+        # Acceso al módulo de almacén
         if roles.intersection({
             "ADMINISTRADOR",
             "ALMACEN",
         }):
-            menu.append({
-                "nombre": "📦 Almacén",
-                "url": "/almacen/",
-            })
+            menu.extend([
+                {
+                    "nombre": "📦 Almacén",
+                    "url": "/almacen/",
+                },
+                {
+                    # HU-09: Asociar equipos a clientes
+                    "nombre": "🖥️ Asignar equipos a clientes",
+                    "url": "/almacen/equipos-clientes/asignar/",
+                },
+            ])
 
         # HU-02: Gestión de contratos
         if roles.intersection({
@@ -72,7 +79,7 @@ def menu_wintv(request):
             "TECNICO",
         }):
             menu.append({
-                "nombre": "🛠️ Registrar incidencias",
+                "nombre": "🛠 Registrar incidencias",
                 "url": "/incidencias/registrar/",
             })
 
