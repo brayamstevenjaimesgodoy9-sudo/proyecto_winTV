@@ -1,15 +1,23 @@
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.http import HttpResponseForbidden
+
+from almacen.models import OrdenTrabajo
+from incidencias.models import Incidencia
+from servicios.models import Contrato
 
 from .forms import ClienteForm
 from .models import Cliente
 
 
+# ==========================================
 # HU-01: REGISTRAR CLIENTES
+# ==========================================
+
 @login_required
 def registrar_cliente(request):
 
@@ -47,7 +55,10 @@ def registrar_cliente(request):
     )
 
 
+# ==========================================
 # HU-06: BUSCAR CLIENTES
+# ==========================================
+
 @login_required
 def buscar_clientes(request):
 
@@ -83,3 +94,77 @@ def buscar_clientes(request):
         }
     )
 
+
+# ==========================================
+# HU-04: CONSULTAR HISTORIAL DEL CLIENTE
+# RESPONSABLE: JHAMPIER
+# ==========================================
+
+@login_required
+def historial_cliente(request, cliente_id):
+
+    # VALIDAR PERMISOS DEL USUARIO
+    # Solo ADMINISTRADOR, VENDEDOR o superusuario.
+    usuario = request.user
+
+    autorizado = (
+        usuario.is_superuser
+        or usuario.groups.filter(
+            name__in=["ADMINISTRADOR", "VENDEDOR"]
+        ).exists()
+    )
+
+    if not autorizado:
+        return HttpResponseForbidden(
+            "No tienes permisos para consultar "
+            "el historial de clientes."
+        )
+
+    # OBTENER EL CLIENTE SOLICITADO
+    cliente = get_object_or_404(
+        Cliente,
+        pk=cliente_id,
+    )
+
+    # CONSULTAR LOS CONTRATOS DEL CLIENTE
+    contratos = list(
+        Contrato.objects.filter(
+            cliente_id=cliente.pk
+        )
+        .select_related("plan")
+        .order_by("-fecha_inicio", "-id_contrato")
+    )
+
+    # OBTENER IDENTIFICADORES DE CONTRATOS
+    ids_contratos = [
+        contrato.pk
+        for contrato in contratos
+    ]
+
+    # CONSULTAR LAS INCIDENCIAS DEL CLIENTE
+    incidencias = list(
+        Incidencia.objects.filter(
+            id_cliente=cliente.pk
+        )
+        .select_related("tipo_averia")
+        .order_by("-fecha_reporte", "-id_incidencia")
+    )
+
+    # CONSULTAR ÓRDENES DE TRABAJO
+    ordenes = list(
+        OrdenTrabajo.objects.filter(
+            id_contrato__in=ids_contratos
+        )
+        .order_by("-fecha_creacion", "-id_orden")
+    )
+
+    return render(
+        request,
+        "clientes/historial.html",
+        {
+            "cliente": cliente,
+            "contratos": contratos,
+            "incidencias": incidencias,
+            "ordenes": ordenes,
+        }
+    )

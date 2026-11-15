@@ -1,0 +1,402 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Historial del cliente | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<style>
+    .hu04-contenedor {
+        max-width: 1100px;
+        margin: 25px auto;
+        padding: 0 15px;
+    }
+
+    .hu04-encabezado {
+        margin-bottom: 25px;
+    }
+
+    .hu04-encabezado h1 {
+        color: #17365d;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .hu04-encabezado p {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .hu04-tarjeta {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .hu04-tarjeta-titulo {
+        padding: 17px 22px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .hu04-tarjeta-titulo h2 {
+        margin: 0;
+        color: #17365d;
+        font-size: 19px;
+    }
+
+    .hu04-tarjeta-cuerpo {
+        padding: 22px;
+    }
+
+    .hu04-datos {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .hu04-dato {
+        min-width: 0;
+    }
+
+    .hu04-dato strong {
+        display: block;
+        color: #475569;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .hu04-dato span {
+        color: #172b4d;
+        font-size: 15px;
+        overflow-wrap: anywhere;
+    }
+
+    .hu04-tabla-contenedor {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .hu04-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .hu04-tabla th {
+        padding: 13px 15px;
+        background: #edf2f7;
+        color: #17365d;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .hu04-tabla td {
+        padding: 13px 15px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+        vertical-align: top;
+    }
+
+    .hu04-tabla tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .hu04-vacio {
+        padding: 25px;
+        color: #64748b;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .hu04-estado {
+        display: inline-block;
+        padding: 5px 10px;
+        background: #e8f0fe;
+        color: #1d4ed8;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .hu04-botones {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .hu04-boton {
+        display: inline-block;
+        padding: 11px 18px;
+        background: #173e80;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .hu04-boton:hover {
+        background: #102e61;
+        color: #ffffff;
+    }
+
+    @media (max-width: 650px) {
+        .hu04-datos {
+            grid-template-columns: 1fr;
+        }
+
+        .hu04-contenedor {
+            padding: 0 8px;
+        }
+
+        .hu04-tarjeta-cuerpo {
+            padding: 15px;
+        }
+    }
+</style>
+
+<div class="hu04-contenedor">
+
+    <!-- ENCABEZADO -->
+    <header class="hu04-encabezado">
+        <h1>Historial del cliente</h1>
+        <p>
+            Consulta los contratos, incidencias y órdenes
+            de trabajo registrados en WinTV.
+        </p>
+    </header>
+
+    <!-- REGRESAR A BÚSQUEDA -->
+    <div class="hu04-botones">
+        <a href="{% url 'clientes:buscar' %}"
+           class="hu04-boton">
+            ← Volver a buscar clientes
+        </a>
+    </div>
+
+    <!-- INFORMACIÓN DEL CLIENTE -->
+    <section class="hu04-tarjeta">
+
+        <div class="hu04-tarjeta-titulo">
+            <h2>👤 Información del cliente</h2>
+        </div>
+
+        <div class="hu04-tarjeta-cuerpo">
+            <div class="hu04-datos">
+
+                <div class="hu04-dato">
+                    <strong>Código del cliente</strong>
+                    <span>{{ cliente.id_cliente }}</span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Nombre o razón social</strong>
+                    <span>
+                        {% if cliente.razon_social %}
+                            {{ cliente.razon_social }}
+                        {% else %}
+                            {{ cliente.nombres }}
+                            {{ cliente.apellidos }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Documento</strong>
+                    <span>
+                        {{ cliente.tipo_documento }}
+                        {{ cliente.numero_documento }}
+                    </span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Teléfono</strong>
+                    <span>{{ cliente.telefono|default:"No registrado" }}</span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Correo electrónico</strong>
+                    <span>{{ cliente.correo|default:"No registrado" }}</span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Zona</strong>
+                    <span>{{ cliente.zona|default:"No registrada" }}</span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Dirección</strong>
+                    <span>{{ cliente.direccion|default:"No registrada" }}</span>
+                </div>
+
+                <div class="hu04-dato">
+                    <strong>Estado</strong>
+                    <span class="hu04-estado">
+                        {% if cliente.activo == 1 %}
+                            Activo
+                        {% else %}
+                            Inactivo
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+    <!-- HISTORIAL DE CONTRATOS -->
+    <section class="hu04-tarjeta">
+
+        <div class="hu04-tarjeta-titulo">
+            <h2>📄 Historial de contratos</h2>
+        </div>
+
+        <div class="hu04-tabla-contenedor">
+            <table class="hu04-tabla">
+                <thead>
+                    <tr>
+                        <th>Contrato</th>
+                        <th>Plan</th>
+                        <th>Fecha de inicio</th>
+                        <th>Dirección de instalación</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for contrato in contratos %}
+                        <tr>
+                            <td>{{ contrato.codigo }}</td>
+                            <td>{{ contrato.plan.nombre }}</td>
+                            <td>{{ contrato.fecha_inicio|date:"d/m/Y" }}</td>
+                            <td>{{ contrato.direccion_instalacion }}</td>
+                            <td>
+                                <span class="hu04-estado">
+                                    {{ contrato.get_estado_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="hu04-vacio">
+                                Este cliente no tiene contratos registrados.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- HISTORIAL DE INCIDENCIAS -->
+    <section class="hu04-tarjeta">
+
+        <div class="hu04-tarjeta-titulo">
+            <h2>🛠️ Historial de incidencias</h2>
+        </div>
+
+        <div class="hu04-tabla-contenedor">
+            <table class="hu04-tabla">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Tipo de avería</th>
+                        <th>Descripción</th>
+                        <th>Prioridad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for incidencia in incidencias %}
+                        <tr>
+                            <td>#{{ incidencia.id_incidencia }}</td>
+                            <td>
+                                {{ incidencia.fecha_reporte|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>{{ incidencia.tipo_averia.nombre }}</td>
+                            <td>{{ incidencia.descripcion }}</td>
+                            <td>{{ incidencia.get_prioridad_display }}</td>
+                            <td>
+                                <span class="hu04-estado">
+                                    {{ incidencia.estado }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="hu04-vacio">
+                                Este cliente no tiene incidencias registradas.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <!-- HISTORIAL DE ÓRDENES -->
+    <section class="hu04-tarjeta">
+
+        <div class="hu04-tarjeta-titulo">
+            <h2>📋 Historial de órdenes de trabajo</h2>
+        </div>
+
+        <div class="hu04-tabla-contenedor">
+            <table class="hu04-tabla">
+                <thead>
+                    <tr>
+                        <th>Orden</th>
+                        <th>Contrato</th>
+                        <th>Tipo</th>
+                        <th>Fecha de creación</th>
+                        <th>Estado</th>
+                        <th>Diagnóstico</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for orden in ordenes %}
+                        <tr>
+                            <td>#{{ orden.id_orden }}</td>
+                            <td>#{{ orden.id_contrato }}</td>
+                            <td>{{ orden.tipo_orden }}</td>
+                            <td>
+                                {{ orden.fecha_creacion|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>
+                                <span class="hu04-estado">
+                                    {{ orden.estado }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ orden.diagnostico|default:"Sin diagnóstico" }}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="hu04-vacio">
+                                Este cliente no tiene órdenes de trabajo.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
