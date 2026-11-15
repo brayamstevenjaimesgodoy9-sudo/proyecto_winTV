@@ -1,0 +1,73 @@
+<h2>HU-17: Registrar materiales utilizados</h2>
+
+{% if messages %}
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+{% endif %}
+
+{% if form.non_field_errors %}
+    {{ form.non_field_errors }}
+{% endif %}
+
+<h3>Materiales entregados para reparación</h3>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Orden</th>
+            <th>Material</th>
+            <th>Entregado</th>
+            <th>Utilizado</th>
+            <th>Devuelto</th>
+            <th>Disponible</th>
+            <th>Registrar uso adicional</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for detalle in detalles %}
+        <tr>
+            <td>{{ detalle.entrega.orden_id }}</td>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.cantidad_entregada }}</td>
+            <td>{{ detalle.cantidad_utilizada }}</td>
+            <td>{{ detalle.cantidad_devuelta }}</td>
+
+           <td>
+    {{ detalle.disponible }}
+</td>
+
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="detalle_id"
+                        value="{{ detalle.pk }}"
+                    >
+
+                    <input
+                        type="number"
+                        name="cantidad"
+                        min="1"
+                        required
+                    >
+
+                    <button type="submit">
+                        Registrar
+                    </button>
+                </form>
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="7">
+                No hay materiales entregados disponibles.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

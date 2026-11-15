@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.test import SimpleTestCase
 
 from .forms import RegistroProductoForm, ConfigurarStockMinimoForm
-
+from .forms import RegistrarMaterialUtilizadoForm
 
 class StockMinimoFormTests(SimpleTestCase):
 
@@ -611,3 +611,286 @@ class SalidaMaterialesVistaTests(SimpleTestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.formulario.add_error.assert_called_once()
         self.servicio.assert_called_once()
+
+
+# ==========================================
+# HU-17: PRUEBAS AUTOMATIZADAS
+# RESPONSABLE: BRAYAM
+# ==========================================
+
+class RegistrarMaterialUtilizadoFormTests(SimpleTestCase):
+
+    def test_acepta_cantidad_valida(self):
+        form = RegistrarMaterialUtilizadoForm(
+            data={
+                "detalle_id": 1,
+                "cantidad": 2,
+            }
+        )
+
+        self.assertTrue(form.is_valid())
+
+    def test_rechaza_cantidad_cero(self):
+        form = RegistrarMaterialUtilizadoForm(
+            data={
+                "detalle_id": 1,
+                "cantidad": 0,
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("cantidad", form.errors)
+
+    def test_rechaza_cantidad_negativa(self):
+        form = RegistrarMaterialUtilizadoForm(
+            data={
+                "detalle_id": 1,
+                "cantidad": -5,
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("cantidad", form.errors)
+
+
+# ==========================================
+# HU-17: PRUEBAS DEL SERVICIO
+# RESPONSABLE: BRAYAM
+# ==========================================
+
+from almacen.materiales_usados_services import registrar_material_utilizado
+
+
+class RegistrarMaterialUtilizadoServicioTests(SimpleTestCase):
+
+    def test_rechaza_usuario_no_autenticado(self):
+        usuario = SimpleNamespace(
+            is_authenticated=False,
+            is_superuser=False,
+        )
+
+        with self.assertRaises(PermissionDenied):
+            registrar_material_utilizado(
+                detalle_id=1,
+                cantidad=1,
+                usuario=usuario,
+            )
+
+    def test_rechaza_usuario_sin_permisos(self):
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = False
+        usuario.groups.filter.return_value.exists.return_value = False
+
+        with self.assertRaises(PermissionDenied):
+            registrar_material_utilizado(
+                detalle_id=1,
+                cantidad=1,
+                usuario=usuario,
+            )
+
+    def test_rechaza_cantidad_cero(self):
+        usuario = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        with self.assertRaises(ValidationError):
+            registrar_material_utilizado(
+                detalle_id=1,
+                cantidad=0,
+                usuario=usuario,
+            )
+
+    def test_rechaza_cantidad_negativa(self):
+        usuario = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        with self.assertRaises(ValidationError):
+            registrar_material_utilizado(
+                detalle_id=1,
+                cantidad=-5,
+                usuario=usuario,
+            )
+
+    def test_rechaza_asignacion_no_vigente(self):
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = False
+        usuario.pk = 7
+
+        usuario.groups.filter.return_value.exists.side_effect = [
+            True,
+            False,
+            False,
+        ]
+
+        detalle = SimpleNamespace(
+            pk=1,
+            entrega=SimpleNamespace(
+                orden_id=1,
+                tecnico_id=7,
+                estado="ENTREGADA",
+            ),
+            producto=SimpleNamespace(
+                categoria="MATERIAL",
+            ),
+        )
+
+        orden = SimpleNamespace(
+            pk=1,
+            estado="PROGRAMADA",
+            tipo_orden="REPARACION",
+        )
+
+        with (
+            patch(
+                "almacen.materiales_usados_services.transaction.atomic",
+                return_value=nullcontext(),
+            ),
+            patch(
+                "almacen.materiales_usados_services.DetalleEntrega.objects.select_related"
+            ) as consulta_detalle,
+            patch(
+                "almacen.materiales_usados_services.OrdenTrabajo.objects.select_for_update"
+            ) as consulta_orden,
+            patch(
+                "almacen.materiales_usados_services.AsignacionTecnico.objects.filter"
+            ) as consulta_asignacion,
+        ):
+            consulta_detalle.return_value.get.return_value = detalle
+            consulta_orden.return_value.get.return_value = orden
+            consulta_asignacion.return_value.exists.return_value = False
+
+            with self.assertRaises(PermissionDenied):
+                registrar_material_utilizado(
+                    detalle_id=1,
+                    cantidad=1,
+                    usuario=usuario,
+                )
+
+
+# ==========================================
+# HU-17: PRUEBAS AUTOMATIZADAS DE REGISTRO
+# RESPONSABLE: BRAYAM
+# ==========================================
+
+class RegistrarMaterialUtilizadoRegistroTests(SimpleTestCase):
+
+    def setUp(self):
+        self.usuario = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+            pk=1,
+        )
+
+        self.detalle = SimpleNamespace(
+            pk=1,
+            cantidad_entregada=10,
+            cantidad_utilizada=6,
+            cantidad_devuelta=0,
+            entrega=SimpleNamespace(
+                orden_id=1,
+                estado="ENTREGADA",
+                tecnico_id=2,
+            ),
+            producto=SimpleNamespace(
+                categoria="MATERIAL",
+            ),
+        )
+
+        self.orden = SimpleNamespace(
+            pk=1,
+            estado="PROGRAMADA",
+            tipo_orden="REPARACION",
+        )
+
+        self.contexto = ExitStack()
+        self.addCleanup(self.contexto.close)
+
+        def simular(ruta, **opciones):
+            return self.contexto.enter_context(
+                patch(ruta, **opciones)
+            )
+
+        simular(
+            "almacen.materiales_usados_services.transaction.atomic",
+            return_value=nullcontext(),
+        )
+
+        consulta_detalle = simular(
+            "almacen.materiales_usados_services."
+            "DetalleEntrega.objects.select_related"
+        )
+        consulta_detalle.return_value.get.return_value = self.detalle
+
+        consulta_orden = simular(
+            "almacen.materiales_usados_services."
+            "OrdenTrabajo.objects.select_for_update"
+        )
+        consulta_orden.return_value.get.return_value = self.orden
+
+        self.filtro = simular(
+            "almacen.materiales_usados_services."
+            "DetalleEntrega.objects.filter"
+        )
+
+        self.detalle.refresh_from_db = MagicMock()
+
+    def test_registro_correcto(self):
+        self.filtro.return_value.update.return_value = 1
+
+        resultado = registrar_material_utilizado(
+            detalle_id=1,
+            cantidad=2,
+            usuario=self.usuario,
+        )
+
+        self.assertIs(resultado, self.detalle)
+        self.filtro.return_value.update.assert_called_once()
+        self.detalle.refresh_from_db.assert_called_once()
+
+        expresion = (
+            self.filtro.return_value.update.call_args
+            .kwargs["cantidad_utilizada"]
+        )
+
+        self.assertEqual(expresion.lhs.name, "cantidad_utilizada")
+        self.assertEqual(expresion.connector, "+")
+        self.assertEqual(expresion.rhs.value, 2)
+
+    def test_rechaza_cantidad_excesiva(self):
+        self.filtro.return_value.update.return_value = 0
+
+        with self.assertRaisesMessage(
+            ValidationError,
+            "La cantidad supera los materiales disponibles."
+        ):
+            registrar_material_utilizado(
+                detalle_id=1,
+                cantidad=5,
+                usuario=self.usuario,
+            )
+
+        self.detalle.refresh_from_db.assert_not_called()
+
+    def test_no_descuenta_stock_nuevamente(self):
+        self.filtro.return_value.update.return_value = 1
+
+        registrar_material_utilizado(
+            detalle_id=1,
+            cantidad=2,
+            usuario=self.usuario,
+        )
+
+        argumentos = self.filtro.return_value.update.call_args.kwargs
+
+        self.assertEqual(
+            list(argumentos.keys()),
+            ["cantidad_utilizada"],
+        )
+
+        self.assertNotIn("stock_actual", argumentos)
+

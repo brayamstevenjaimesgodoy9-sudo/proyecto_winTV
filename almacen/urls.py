@@ -16,4 +16,10 @@ urlpatterns = [
         views.asignar_equipo_cliente,
         name="asignar_equipo_cliente",
     ),
+    # HU-17: Registrar materiales usados en reparación
+path(
+    "materiales-usados/",
+    views.registrar_materiales_usados,
+    name="registrar_materiales_usados",
+),
 ]

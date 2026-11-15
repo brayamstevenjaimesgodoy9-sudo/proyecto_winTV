@@ -66,7 +66,15 @@ def menu_wintv(request):
                     "url": "/almacen/equipos-clientes/asignar/",
                 },
             ])
-
+        # HU-17: Registrar materiales utilizados en reparación
+        if roles.intersection({
+            "ADMINISTRADOR",
+            "TECNICO",
+        }):
+            menu.append({
+                "nombre": "🔧 Registrar materiales utilizados",
+                "url": "/almacen/materiales-usados/",
+            })
         # ==========================================
         # HU-02: GESTION DE CONTRATOS
         # ==========================================
