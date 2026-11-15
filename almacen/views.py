@@ -17,13 +17,19 @@ from .forms import (
     SalidaMaterialesForm,
     DetalleSalidaFormSet,
     AsignarEquipoClienteForm,
+    RegistrarMaterialUtilizadoForm,
 )
-from .models import MovimientoAlmacen, Producto
+
+from .models import (
+    MovimientoAlmacen,
+    Producto,
+    DetalleEntrega,
+)
 from .services import (
     registrar_salida_materiales,
     registrar_equipo_cliente,
 )
-
+from .materiales_usados_services import registrar_material_utilizado
 
 logger = logging.getLogger(__name__)
 
@@ -316,5 +322,107 @@ def asignar_equipo_cliente(request):
         "almacen/asignar_equipo.html",
         {
             "form": form,
+        }
+    )
+
+
+# ==========================================
+# HU-17: REGISTRAR MATERIALES UTILIZADOS
+# RESPONSABLE: BRAYAM
+# ==========================================
+
+@login_required
+def registrar_materiales_usados(request):
+
+    es_administrador = (
+        request.user.is_superuser
+        or request.user.groups.filter(
+            name="ADMINISTRADOR"
+        ).exists()
+    )
+
+    es_tecnico = request.user.groups.filter(
+        name="TECNICO"
+    ).exists()
+
+    if not (es_administrador or es_tecnico):
+        return HttpResponseForbidden(
+            "No tienes permisos para registrar materiales utilizados."
+        )
+
+    detalles = DetalleEntrega.objects.select_related(
+        "entrega", "producto"
+    ).filter(
+        entrega__estado="ENTREGADA",
+        entrega__orden__estado__in=[
+            "PROGRAMADA", "EN_PROCESO"
+        ],
+        producto__categoria="MATERIAL",
+    )
+
+    if not es_administrador:
+        detalles = detalles.filter(
+            entrega__tecnico_id=request.user.pk
+        )
+
+    detalles = detalles.order_by("id_detalle")
+    detalles = detalles.annotate(
+    disponible=(
+        F("cantidad_entregada")
+        - F("cantidad_utilizada")
+        - F("cantidad_devuelta")
+    )
+)
+    if request.method == "POST":
+        form = RegistrarMaterialUtilizadoForm(request.POST)
+
+        if form.is_valid():
+            detalle_id = form.cleaned_data["detalle_id"]
+            cantidad = form.cleaned_data["cantidad"]
+
+            try:
+                detalle = registrar_material_utilizado(
+                    detalle_id=detalle_id,
+                    cantidad=cantidad,
+                    usuario=request.user,
+                )
+
+            except ValidationError as error:
+                form.add_error(None, error)
+
+            except PermissionDenied:
+                return HttpResponseForbidden(
+                    "No tienes permisos para registrar este material."
+                )
+
+            except DatabaseError:
+                logger.exception(
+                    "Error de Oracle al registrar materiales utilizados"
+                )
+                form.add_error(
+                    None,
+                    "No se pudo guardar el registro en Oracle."
+                )
+
+            else:
+                messages.success(
+    request,
+    (
+        f"Se registró {cantidad} unidad utilizada"
+        if cantidad == 1
+        else f"Se registraron {cantidad} unidades utilizadas"
+    ) + f" del material {detalle.producto.nombre}."
+)
+                return redirect("registrar_materiales_usados")
+
+    else:
+        form = RegistrarMaterialUtilizadoForm()
+
+    return render(
+        request,
+        "almacen/materiales_usados.html",
+        {
+            "form": form,
+            "detalles": detalles,
         }
     )

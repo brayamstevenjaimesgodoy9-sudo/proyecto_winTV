@@ -62,6 +62,16 @@ def menu_wintv(request):
                 },
             ])
 
+              # HU-17: Registrar materiales utilizados en reparación
+        if roles.intersection({
+            "ADMINISTRADOR",
+            "TECNICO",
+        }):
+            menu.append({
+                "nombre": "🔧 Registrar materiales utilizados",
+                "url": "/almacen/materiales-usados/",
+            })
+
         # HU-02: Gestión de contratos
         if roles.intersection({
             "ADMINISTRADOR",

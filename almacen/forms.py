@@ -249,3 +249,24 @@ class AsignarEquipoClienteForm(forms.ModelForm):
                 )
 
         return cleaned_data
+
+
+# ==========================================
+# HU-17: REGISTRAR MATERIALES USADOS
+# EN REPARACIÓN
+# ==========================================
+
+class RegistrarMaterialUtilizadoForm(forms.Form):
+
+    detalle_id = forms.IntegerField(
+        min_value=1,
+        widget=forms.HiddenInput()
+    )
+
+    cantidad = forms.IntegerField(
+        min_value=1,
+        label="Cantidad utilizada",
+        widget=forms.NumberInput(
+            attrs={"min": 1}
+        )
+    )
