@@ -2047,3 +2047,27 @@ body.wintv-login-body {
         flex-basis: 100%;
     }
 }
+
+
+/* ==========================================
+   HU-18: SELECTOR DE ESTADOS
+   ========================================== */
+
+.wintv-inc-input {
+    width: 100%;
+    max-width: 450px;
+    padding: 13px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background-color: #ffffff;
+    color: #102a52;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wintv-inc-input:focus {
+    outline: none;
+    border-color: #234a87;
+    box-shadow: 0 0 0 3px rgba(35, 74, 135, 0.12);
+}

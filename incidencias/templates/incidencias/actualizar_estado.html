@@ -1,0 +1,147 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Actualizar estado | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<section class="tarjeta wintv-inc-panel">
+
+    <header class="wintv-inc-cabecera">
+        <div>
+            <h1>Actualizar estado de orden</h1>
+            <p>
+                HU-18: Seguimiento de órdenes
+                de trabajo de WinTV.
+            </p>
+        </div>
+    </header>
+
+    <div class="wintv-inc-informacion">
+        <h2>Información de la orden</h2>
+
+        <p>
+            <strong>Orden:</strong>
+            #{{ orden.id_orden }}
+        </p>
+
+        <p>
+            <strong>Incidencia:</strong>
+            {% if orden.id_incidencia %}
+                #{{ orden.id_incidencia }}
+            {% else %}
+                Sin incidencia
+            {% endif %}
+        </p>
+
+        <p>
+            <strong>Contrato:</strong>
+            {{ orden.id_contrato }}
+        </p>
+
+        <p>
+            <strong>Tipo:</strong>
+            {{ orden.tipo_orden }}
+        </p>
+
+        <p>
+            <strong>Estado actual:</strong>
+            <span class="wintv-inc-estado">
+                {{ orden.estado }}
+            </span>
+        </p>
+    </div>
+
+    <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0;">
+
+    <div class="wintv-inc-informacion">
+        <h2>Diagnóstico técnico</h2>
+
+        <p>
+            <strong>Diagnóstico:</strong>
+            {{ orden.diagnostico|default:"No registrado" }}
+        </p>
+
+        <p>
+            <strong>Solución:</strong>
+            {{ orden.solucion|default:"No registrada" }}
+        </p>
+    </div>
+
+    <hr style="border:0;border-top:1px solid #e2e8f0;margin:24px 0;">
+
+    <div class="wintv-inc-informacion">
+        <h2>Cambiar estado de la orden</h2>
+
+        {% if puede_cambiar %}
+
+            <p>
+                Selecciona un estado válido
+                para continuar el seguimiento.
+            </p>
+
+            <form method="post" class="wintv-inc-form">
+                {% csrf_token %}
+
+                {{ formulario.non_field_errors }}
+
+                <div style="margin:20px 0;max-width:450px;">
+                    <label for="{{ formulario.estado.id_for_label }}">
+                        <strong>Nuevo estado</strong>
+                    </label>
+
+                    <div style="margin-top:10px;">
+                        {{ formulario.estado }}
+                    </div>
+
+                    {% for error in formulario.estado.errors %}
+                        <p style="color:#b42318;">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+
+                <div class="wintv-inc-acciones">
+
+                    <a
+                        href="{% url 'incidencias:estados_orden' %}"
+                        class="wintv-inc-btn-limpiar"
+                        style="display:inline-block;text-decoration:none;padding:12px 20px;"
+                    >
+                        Cancelar
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="wintv-inc-guardar"
+                    >
+                        Guardar nuevo estado
+                    </button>
+
+                </div>
+            </form>
+
+        {% else %}
+
+            <p>
+                Esta orden se encuentra en un
+                estado final o no tiene más
+                transiciones disponibles.
+            </p>
+
+            <a
+                href="{% url 'incidencias:estados_orden' %}"
+                class="wintv-inc-guardar"
+                style="display:inline-block;text-decoration:none;"
+            >
+                Volver a las órdenes
+            </a>
+
+        {% endif %}
+    </div>
+
+</section>
+
+{% endblock %}
