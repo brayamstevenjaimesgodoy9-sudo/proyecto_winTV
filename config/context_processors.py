@@ -79,13 +79,19 @@ def menu_wintv(request):
             "TECNICO",
         }):
             menu.append({
-                "nombre": "🛠️ Registrar incidencias",
+                "nombre": "🛠 Registrar incidencias",
                 "url": "/incidencias/registrar/",
             })
 
             menu.append({
                 "nombre": "📋 Consultar incidencias",
                 "url": "/incidencias/listar/",
+            })
+
+            # HU-16: Registrar diagnóstico de averías
+            menu.append({
+                "nombre": "🩺 Diagnósticos técnicos",
+                "url": "/incidencias/diagnosticos/",
             })
 
     else:
@@ -96,6 +102,8 @@ def menu_wintv(request):
 
     return {
         "menu_wintv": menu,
-        "roles_wintv": ", ".join(sorted(roles))
-                       if roles else "Sin rol",
+        "roles_wintv": (
+            ", ".join(sorted(roles))
+            if roles else "Sin rol"
+        ),
     }
