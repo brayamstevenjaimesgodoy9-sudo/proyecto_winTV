@@ -22,7 +22,9 @@ def menu_wintv(request):
         if usuario.is_superuser:
             roles.add("ADMINISTRADOR")
 
-        # Acceso visual al módulo de clientes
+        # ==========================================
+        # MODULO DE CLIENTES
+        # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "VENDEDOR",
@@ -38,14 +40,18 @@ def menu_wintv(request):
                 },
             ])
 
-        # Menú administrativo
+        # ==========================================
+        # MODULO ADMINISTRATIVO
+        # ==========================================
         if "ADMINISTRADOR" in roles:
             menu.append({
                 "nombre": "🔐 Usuarios",
                 "url": "/usuarios/listar/",
             })
 
-        # Acceso al módulo de almacén
+        # ==========================================
+        # MODULO DE ALMACEN Y HU-09
+        # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "ALMACEN",
@@ -56,13 +62,14 @@ def menu_wintv(request):
                     "url": "/almacen/",
                 },
                 {
-                    # HU-09: Asociar equipos a clientes
                     "nombre": "🖥️ Asignar equipos a clientes",
                     "url": "/almacen/equipos-clientes/asignar/",
                 },
             ])
 
-        # HU-02: Gestión de contratos
+        # ==========================================
+        # HU-02: GESTION DE CONTRATOS
+        # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "VENDEDOR",
@@ -73,38 +80,43 @@ def menu_wintv(request):
                 "url": "/servicios/contratos/",
             })
 
-        # HU-13: Gestión de incidencias
+        # ==========================================
+        # MODULO DE SOPORTE TECNICO
+        # HU-13, HU-16, HU-18 Y HU-19
+        # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "TECNICO",
         }):
-            menu.append({
-                "nombre": "🛠 Registrar incidencias",
-                "url": "/incidencias/registrar/",
-            })
-
-            menu.append({
-                "nombre": "📋 Consultar incidencias",
-                "url": "/incidencias/listar/",
-            })
-
-            # ==========================================
-            # HU-16: DIAGNÓSTICOS TÉCNICOS
-            # ==========================================
-
-            menu.append({
-                "nombre": "🩺 Diagnósticos técnicos",
-                "url": "/incidencias/diagnosticos/",
-            })
-
-            # ==========================================
-            # HU-18: ESTADOS DE ÓRDENES DE TRABAJO
-            # ==========================================
-
-            menu.append({
-                "nombre": "🔄 Estados de órdenes",
-                "url": "/incidencias/ordenes/estados/",
-            })
+            menu.extend([
+                {
+                    # HU-13
+                    "nombre": "🛠 Registrar incidencias",
+                    "url": "/incidencias/registrar/",
+                },
+                {
+                    # HU-13 y HU-14
+                    "nombre": "📋 Consultar incidencias",
+                    "url": "/incidencias/listar/",
+                },
+                {
+                    # HU-16
+                    "nombre": "🩺 Diagnósticos técnicos",
+                    "url": "/incidencias/diagnosticos/",
+                },
+                {
+                    # HU-18
+                    "nombre": "🔄 Estados de órdenes",
+                    "url": "/incidencias/ordenes/estados/",
+                },
+                {
+                    # HU-19
+                    # Texto sin emoji para evitar problemas
+                    # de codificacion.
+                    "nombre": "Historial de incidencias",
+                    "url": "/incidencias/historial/",
+                },
+            ])
 
     else:
         menu.append({
