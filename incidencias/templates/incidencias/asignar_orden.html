@@ -1,39 +1,361 @@
 {% extends "base.html" %}
+
+{% block titulo %}Asignar órdenes | WinTV{% endblock %}
+
 {% block contenido %}
-<div class="container mt-4">
-    <h2>Asignar orden de trabajo a técnico</h2>
-    <p>Seleccione una orden de trabajo y el técnico responsable.</p>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+<style>
+    .hu15-pagina {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 12px 0 36px;
+        color: #183153;
+    }
 
-    <form method="post">
-        {% csrf_token %}
+    .hu15-encabezado {
+        margin-bottom: 26px;
+    }
 
-        {{ formulario.non_field_errors }}
+    .hu15-etiqueta {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 20px;
+        background: #e5efff;
+        color: #17458a;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
 
-        {% for campo in formulario %}
-            <div class="mb-3">
-                <label for="{{ campo.id_for_label }}" class="form-label">
-                    {{ campo.label }}
-                </label>
+    .hu15-encabezado h1 {
+        font-size: 28px;
+        line-height: 1.3;
+        margin: 0 0 10px;
+        color: #142d53;
+    }
 
-                <div>{{ campo }}</div>
+    .hu15-encabezado p {
+        color: #64748b;
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0;
+    }
 
-                {% for error in campo.errors %}
-                    <div class="text-danger">{{ error }}</div>
+    .hu15-tarjeta {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 28px rgba(15, 35, 70, 0.06);
+    }
+
+    .hu15-tarjeta-cabecera {
+        background: #142f59;
+        padding: 23px 28px;
+        color: white;
+    }
+
+    .hu15-tarjeta-cabecera h2 {
+        margin: 0 0 7px;
+        color: white;
+        font-size: 19px;
+    }
+
+    .hu15-tarjeta-cabecera p {
+        margin: 0;
+        color: #dbeafe;
+        font-size: 13px;
+    }
+
+    .hu15-cuerpo {
+        padding: 30px;
+    }
+
+    .hu15-seccion {
+        margin-bottom: 25px;
+    }
+
+    .hu15-seccion-titulo {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .hu15-campos {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+    }
+
+    .hu15-campo {
+        min-width: 0;
+        margin-bottom: 20px;
+    }
+
+    .hu15-campo label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 9px;
+        color: #334155;
+    }
+
+    .hu15-campo select,
+    .hu15-campo input,
+    .hu15-campo textarea {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 14px;
+        min-height: 46px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: white;
+        color: #1e293b;
+        font: inherit;
+        font-size: 14px;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .hu15-campo textarea {
+        min-height: 115px;
+        resize: vertical;
+    }
+
+    .hu15-campo select:focus,
+    .hu15-campo input:focus,
+    .hu15-campo textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .hu15-ayuda {
+        display: block;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .hu15-error {
+        margin-top: 7px;
+        color: #b91c1c;
+        font-size: 13px;
+    }
+
+    .hu15-aviso {
+        padding: 13px 16px;
+        border-radius: 9px;
+        margin-bottom: 20px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        font-size: 14px;
+    }
+
+    .hu15-aviso-error {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+
+    .hu15-aviso-success {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #166534;
+    }
+
+    .hu15-acciones {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+        padding-top: 22px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .hu15-boton {
+        background: #1d4ed8;
+        color: #ffffff;
+        border: none;
+        border-radius: 9px;
+        padding: 13px 25px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s;
+    }
+
+    .hu15-boton:hover {
+        background: #1e40af;
+    }
+
+    .hu15-nota {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 700px) {
+        .hu15-campos {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .hu15-cuerpo {
+            padding: 20px;
+        }
+
+        .hu15-tarjeta-cabecera {
+            padding: 20px;
+        }
+
+        .hu15-encabezado h1 {
+            font-size: 23px;
+        }
+
+        .hu15-acciones {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .hu15-boton {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="hu15-pagina">
+
+    <div class="hu15-encabezado">
+        <span class="hu15-etiqueta">
+            GESTIÓN TÉCNICA · HU-15
+        </span>
+
+        <h1>Asignación de órdenes de trabajo</h1>
+
+        <p>
+            Asigne una orden de trabajo a un técnico
+            responsable y registre las observaciones
+            necesarias para su atención.
+        </p>
+    </div>
+
+    <section class="hu15-tarjeta">
+
+        <div class="hu15-tarjeta-cabecera">
+            <h2>Nueva asignación</h2>
+            <p>
+                Complete los datos para registrar
+                la asignación del técnico.
+            </p>
+        </div>
+
+        <div class="hu15-cuerpo">
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% for error in formulario.non_field_errors %}
+                    <div class="hu15-aviso hu15-aviso-error"
+                         role="alert">
+                        {{ error }}
+                    </div>
                 {% endfor %}
-            </div>
-        {% endfor %}
 
-        <button type="submit" class="btn btn-primary">
-            Asignar técnico
-        </button>
-    </form>
+                <h3 class="hu15-seccion-titulo">
+                    Información de la asignación
+                </h3>
+
+                <div class="hu15-campos">
+
+                    <div class="hu15-campo">
+                        <label for="{{ formulario.orden.id_for_label }}">
+                            Orden de trabajo *
+                        </label>
+
+                        {{ formulario.orden }}
+
+                        {% for error in formulario.orden.errors %}
+                            <div class="hu15-error" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                        <span class="hu15-ayuda">
+                            Seleccione una orden pendiente
+                            o programada.
+                        </span>
+                    </div>
+
+                    <div class="hu15-campo">
+                        <label for="{{ formulario.tecnico.id_for_label }}">
+                            Técnico responsable *
+                        </label>
+
+                        {{ formulario.tecnico }}
+
+                        {% for error in formulario.tecnico.errors %}
+                            <div class="hu15-error" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                        <span class="hu15-ayuda">
+                            Seleccione un usuario activo
+                            con rol de técnico.
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="hu15-seccion">
+
+                    <h3 class="hu15-seccion-titulo">
+                        Información adicional
+                    </h3>
+
+                    <div class="hu15-campo">
+                        <label for="{{ formulario.observaciones.id_for_label }}">
+                            Observaciones
+                        </label>
+
+                        {{ formulario.observaciones }}
+
+                        {% for error in formulario.observaciones.errors %}
+                            <div class="hu15-error" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                        <span class="hu15-ayuda">
+                            Campo opcional. Puede registrar
+                            indicaciones para el técnico.
+                            Máximo 500 bytes.
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="hu15-acciones">
+                    <span class="hu15-nota">
+                        * Campos obligatorios
+                    </span>
+
+                    <button type="submit" class="hu15-boton">
+                        Asignar técnico
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </section>
+
 </div>
+
 {% endblock %}

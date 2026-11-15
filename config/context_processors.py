@@ -1,4 +1,3 @@
-
 def menu_wintv(request):
     usuario = request.user
 
@@ -87,6 +86,13 @@ def menu_wintv(request):
                 "nombre": "📋 Consultar incidencias",
                 "url": "/incidencias/listar/",
             })
+
+            # HU-15: Asignar órdenes de trabajo a técnicos
+            if "ADMINISTRADOR" in roles:
+                menu.append({
+                    "nombre": "📋 Asignar órdenes de trabajo",
+                    "url": "/incidencias/asignar-orden/",
+                })
 
             # HU-16: Registrar diagnóstico de averías
             menu.append({
