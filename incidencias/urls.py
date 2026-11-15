@@ -3,6 +3,7 @@ from django.urls import path
 
 from . import views
 from . import diagnostico_views
+from . import asignacion_views
 
 app_name = 'incidencias'
 
@@ -42,4 +43,13 @@ urlpatterns = [
         diagnostico_views.registrar_diagnostico,
         name='diagnosticar'
     ),
+    # ==========================================
+    # HU-15: ASIGNAR ORDENES A TECNICOS
+    # ==========================================
+    path(
+        'asignar-orden/',
+        asignacion_views.asignar_orden_tecnico,
+        name='asignar_orden_tecnico'
+    ),
+
 ]

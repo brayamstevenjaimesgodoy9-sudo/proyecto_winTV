@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container mt-4">
+    <h2>Asignar orden de trabajo a técnico</h2>
+    <p>Seleccione una orden de trabajo y el técnico responsable.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ formulario.non_field_errors }}
+
+        {% for campo in formulario %}
+            <div class="mb-3">
+                <label for="{{ campo.id_for_label }}" class="form-label">
+                    {{ campo.label }}
+                </label>
+
+                <div>{{ campo }}</div>
+
+                {% for error in campo.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">
+            Asignar técnico
+        </button>
+    </form>
+</div>
+{% endblock %}
