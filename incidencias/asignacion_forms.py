@@ -42,3 +42,43 @@ class AsignacionTecnicoForm(forms.Form):
             )
 
         return observaciones
+
+# ==========================================
+# HU-15: EDITAR ASIGNACIÓN DE TÉCNICO
+# ==========================================
+
+class EditarAsignacionTecnicoForm(forms.Form):
+
+    tecnico = forms.ModelChoiceField(
+        queryset=get_user_model().objects.none(),
+        label="Técnico responsable"
+    )
+
+    observaciones = forms.CharField(
+        label="Observaciones",
+        required=False,
+        max_length=500,
+        widget=forms.Textarea(attrs={"rows": 3})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["tecnico"].queryset = (
+            get_user_model().objects.filter(
+                is_active=True,
+                groups__name="TECNICO"
+            )
+            .distinct()
+            .order_by("username")
+        )
+
+    def clean_observaciones(self):
+        observaciones = self.cleaned_data.get("observaciones", "")
+
+        if len(observaciones.encode("utf-8")) > 500:
+            raise forms.ValidationError(
+                "Las observaciones no pueden superar los 500 bytes."
+            )
+
+        return observaciones

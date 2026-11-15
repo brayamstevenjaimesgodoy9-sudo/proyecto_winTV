@@ -52,4 +52,12 @@ urlpatterns = [
         name='asignar_orden_tecnico'
     ),
 
+    # ==========================================
+    # HU-15: EDITAR ASIGNACIÓN DE TÉCNICO
+    # ==========================================
+    path(
+        "asignaciones/<int:pk>/editar/",
+        asignacion_views.editar_asignacion_tecnico,
+        name="editar_asignacion_tecnico"
+    ),
 ]

@@ -1,0 +1,374 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Editar asignación | WinTV{% endblock %}
+
+{% block contenido %}
+
+<style>
+    .hu15-editar {
+        max-width: 900px;
+        margin: 35px auto;
+        padding: 0 20px 40px;
+        color: #183153;
+    }
+
+    .hu15-volver {
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 25px;
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .hu15-volver:hover {
+        text-decoration: underline;
+    }
+
+    .hu15-etiqueta {
+        display: inline-block;
+        background: #e5efff;
+        color: #17458a;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+
+    .hu15-editar h1 {
+        font-size: 29px;
+        color: #142d53;
+        margin: 0 0 12px;
+    }
+
+    .hu15-descripcion {
+        color: #64748b;
+        font-size: 15px;
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+
+    .hu15-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 17px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(15, 35, 70, .07);
+    }
+
+    .hu15-card-header {
+        background: #17345f;
+        padding: 25px 30px;
+        color: #fff;
+    }
+
+    .hu15-card-header h2 {
+        margin: 0 0 8px;
+        color: #fff;
+        font-size: 20px;
+    }
+
+    .hu15-card-header p {
+        margin: 0;
+        color: #dbeafe;
+        font-size: 13px;
+    }
+
+    .hu15-card-body {
+        padding: 30px;
+    }
+
+    .hu15-resumen {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .hu15-resumen-titulo {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .hu15-resumen-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .hu15-resumen-label {
+        display: block;
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .hu15-resumen-valor {
+        font-size: 15px;
+        font-weight: 700;
+        color: #183153;
+    }
+
+    .hu15-campo {
+        margin-bottom: 25px;
+    }
+
+    .hu15-campo label {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #334155;
+    }
+
+    .hu15-campo select,
+    .hu15-campo textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 13px 15px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #fff;
+        color: #1e293b;
+        font: inherit;
+        font-size: 14px;
+    }
+
+    .hu15-campo select:focus,
+    .hu15-campo textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+    }
+
+    .hu15-campo textarea {
+        min-height: 125px;
+        resize: vertical;
+    }
+
+    .hu15-ayuda {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+
+    .hu15-error {
+        color: #b91c1c;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .hu15-aviso {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        border-radius: 9px;
+        padding: 13px 16px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .hu15-acciones {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 22px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .hu15-boton {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 13px 22px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .hu15-boton-volver {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    .hu15-boton-guardar {
+        background: #1d4ed8;
+        color: #fff;
+        border: 1px solid #1d4ed8;
+    }
+
+    .hu15-boton-guardar:hover {
+        background: #1e40af;
+    }
+
+    @media (max-width: 650px) {
+        .hu15-resumen-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hu15-card-body {
+            padding: 20px;
+        }
+
+        .hu15-acciones {
+            flex-direction: column;
+        }
+
+        .hu15-boton {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+</style>
+
+<div class="hu15-editar">
+
+    <a href="{% url 'incidencias:asignar_orden_tecnico' %}"
+       class="hu15-volver">
+        ← Volver a asignaciones
+    </a>
+
+    <div>
+        <span class="hu15-etiqueta">
+            GESTIÓN TÉCNICA · HU-15
+        </span>
+
+        <h1>Editar asignación</h1>
+
+        <p class="hu15-descripcion">
+            Modifique el técnico responsable o las observaciones
+            sin eliminar el historial de la asignación.
+        </p>
+    </div>
+
+    <section class="hu15-card">
+
+        <div class="hu15-card-header">
+            <h2>Asignación #{{ asignacion.id_asignacion }}</h2>
+            <p>Actualice los datos de la asignación seleccionada.</p>
+        </div>
+
+        <div class="hu15-card-body">
+
+            <div class="hu15-resumen">
+
+                <div class="hu15-resumen-titulo">
+                    Información actual
+                </div>
+
+                <div class="hu15-resumen-grid">
+
+                    <div>
+                        <span class="hu15-resumen-label">
+                            Orden de trabajo
+                        </span>
+                        <span class="hu15-resumen-valor">
+                            Orden #{{ asignacion.orden.id_orden }}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="hu15-resumen-label">
+                            Técnico actual
+                        </span>
+                        <span class="hu15-resumen-valor">
+                            {{ asignacion.tecnico.username }}
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="hu15-resumen-label">
+                            Estado
+                        </span>
+                        <span class="hu15-resumen-valor">
+                            {{ asignacion.estado }}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                {% for error in formulario.non_field_errors %}
+                    <div class="hu15-aviso" role="alert">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+
+                <div class="hu15-campo">
+
+                    <label for="{{ formulario.tecnico.id_for_label }}">
+                        Técnico responsable *
+                    </label>
+
+                    {{ formulario.tecnico }}
+
+                    {% for error in formulario.tecnico.errors %}
+                        <div class="hu15-error" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                    <span class="hu15-ayuda">
+                        Seleccione un técnico activo del sistema.
+                    </span>
+
+                </div>
+
+                <div class="hu15-campo">
+
+                    <label for="{{ formulario.observaciones.id_for_label }}">
+                        Observaciones
+                    </label>
+
+                    {{ formulario.observaciones }}
+
+                    {% for error in formulario.observaciones.errors %}
+                        <div class="hu15-error" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                    <span class="hu15-ayuda">
+                        Campo opcional. Máximo 500 bytes.
+                    </span>
+
+                </div>
+
+                <div class="hu15-acciones">
+
+                    <a href="{% url 'incidencias:asignar_orden_tecnico' %}"
+                       class="hu15-boton hu15-boton-volver">
+                        Cancelar cambios
+                    </a>
+
+                    <button type="submit"
+                            class="hu15-boton hu15-boton-guardar"
+                            {% if asignacion.estado != "ASIGNADO" %}disabled{% endif %}>
+                        Guardar cambios
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
