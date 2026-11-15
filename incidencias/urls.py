@@ -43,3 +43,24 @@ urlpatterns = [
         name='diagnosticar'
     ),
 ]
+
+
+# ==========================================
+# HU-18: ESTADOS DE ÓRDENES DE TRABAJO
+# ==========================================
+
+from . import estado_orden_views
+
+urlpatterns += [
+    path(
+        "ordenes/estados/",
+        estado_orden_views.listar_estados_orden,
+        name="estados_orden",
+    ),
+
+    path(
+        "ordenes/estados/<int:orden_id>/",
+        estado_orden_views.actualizar_estado_orden,
+        name="actualizar_estado_orden",
+    ),
+]

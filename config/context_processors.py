@@ -88,10 +88,22 @@ def menu_wintv(request):
                 "url": "/incidencias/listar/",
             })
 
-            # HU-16: Registrar diagnóstico de averías
+            # ==========================================
+            # HU-16: DIAGNÓSTICOS TÉCNICOS
+            # ==========================================
+
             menu.append({
                 "nombre": "🩺 Diagnósticos técnicos",
                 "url": "/incidencias/diagnosticos/",
+            })
+
+            # ==========================================
+            # HU-18: ESTADOS DE ÓRDENES DE TRABAJO
+            # ==========================================
+
+            menu.append({
+                "nombre": "🔄 Estados de órdenes",
+                "url": "/incidencias/ordenes/estados/",
             })
 
     else:
