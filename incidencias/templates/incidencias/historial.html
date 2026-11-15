@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block titulo %}Historial de incidencias | WinTV{% endblock %}
+
+{% block contenido %}
+<style>
+  .hu19-filtros { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 14px; margin: 24px 0; }
+  .hu19-campo { display: flex; flex-direction: column; gap: 6px; }
+  .hu19-campo label { font-weight: 600; color: #142d50; }
+  .hu19-campo input, .hu19-campo select { width:100%; min-height:42px; border:1px solid #cad5e5; border-radius:8px; padding:9px 12px; background:white; font:inherit; }
+  .hu19-acciones { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 8px 0 24px; }
+  .hu19-btn { display:inline-block; border:0; border-radius:8px; padding:11px 17px; text-decoration:none; font-weight:600; cursor:pointer; background:#1c3f77; color:white; font:inherit; }
+  .hu19-btn-sec { background:#edf2fa; color:#16366b; }
+  .hu19-tabla-contenedor { overflow-x:auto; border:1px solid #dfe7f3; border-radius:12px; }
+  .hu19-tabla { border-collapse:collapse; width:100%; min-width:830px; }
+  .hu19-tabla th { background:#1c3f77; color:white; text-align:left; padding:14px 12px; }
+  .hu19-tabla td { padding:12px; border-top:1px solid #e4e9f1; }
+  .hu19-tabla a { color:#1c3f77; font-weight:700; }
+  .hu19-paginacion { display:flex; gap:20px; justify-content:center; align-items:center; margin-top:24px; }
+  @media (max-width:850px) { .hu19-filtros { grid-template-columns:1fr; } }
+</style>
+<section class="tarjeta wintv-inc-panel">
+  <header class="wintv-inc-cabecera">
+    <div>
+      <h1>Historial de incidencias</h1>
+      <p>HU-19: consulta de reportes y seguimiento de órdenes de WinTV.</p>
+    </div>
+  </header>
+
+  <h2>Buscar incidencias</h2>
+  <form method="get">
+    <div class="hu19-filtros">
+      <div class="hu19-campo">
+        <label for="hu19-buscar">Buscar</label>
+        <input id="hu19-buscar" name="buscar" value="{{ buscar }}" placeholder="ID, cliente, contrato o descripción" maxlength="100">
+      </div>
+      <div class="hu19-campo">
+        <label for="hu19-tipo">Tipo de avería</label>
+        <select id="hu19-tipo" name="tipo">
+          <option value="">Todos los tipos</option>
+          {% for t in tipos_averia %}
+          <option value="{{ t.pk }}" {% if tipo_seleccionado == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="hu19-campo">
+        <label for="hu19-estado">Estado de incidencia</label>
+        <select id="hu19-estado" name="estado">
+          <option value="">Todos los estados</option>
+          {% for e in estados %}
+          {% if e %}<option value="{{ e }}" {% if estado_seleccionado == e %}selected{% endif %}>{{ e }}</option>{% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="hu19-campo">
+        <label for="hu19-desde">Desde</label>
+        <input id="hu19-desde" type="date" name="desde" value="{{ desde }}">
+      </div>
+      <div class="hu19-campo">
+        <label for="hu19-hasta">Hasta</label>
+        <input id="hu19-hasta" type="date" name="hasta" value="{{ hasta }}">
+      </div>
+    </div>
+    <div class="hu19-acciones">
+      <button class="hu19-btn" type="submit">Filtrar</button>
+      <a class="hu19-btn hu19-btn-sec" href="{% url 'incidencias:historial' %}">Limpiar filtros</a>
+    </div>
+  </form>
+
+  <h2>Resultados</h2>
+  <p>{{ pagina.paginator.count }} incidencia{{ pagina.paginator.count|pluralize }} encontrada{{ pagina.paginator.count|pluralize }}.</p>
+  <div class="hu19-tabla-contenedor">
+    <table class="hu19-tabla">
+      <thead><tr>
+        <th>ID</th><th>Fecha de reporte</th><th>Cliente</th><th>Contrato</th>
+        <th>Tipo de avería</th><th>Prioridad</th><th>Estado</th><th>Detalle</th>
+      </tr></thead>
+      <tbody>
+        {% for i in pagina %}
+        <tr>
+          <td>#{{ i.id_incidencia }}</td>
+          <td>{{ i.fecha_reporte|date:"d/m/Y H:i" }}</td>
+          <td>{{ i.id_cliente }}</td>
+          <td>{{ i.id_contrato }}</td>
+          <td>{{ i.tipo_averia.nombre }}</td>
+          <td>{{ i.prioridad }}</td>
+          <td>{{ i.estado }}</td>
+          <td><a href="{% url 'incidencias:historial_detalle' i.id_incidencia %}">Ver detalle</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;padding:28px;">No se encontraron incidencias con estos filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="hu19-paginacion" aria-label="Paginación de incidencias">
+    {% if pagina.has_previous %}
+    <a href="?{% if filtros_url %}{{ filtros_url }}&amp;{% endif %}page={{ pagina.previous_page_number }}">← Anterior</a>
+    {% endif %}
+    <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+    {% if pagina.has_next %}
+    <a href="?{% if filtros_url %}{{ filtros_url }}&amp;{% endif %}page={{ pagina.next_page_number }}">Siguiente →</a>
+    {% endif %}
+  </nav>
+</section>
+{% endblock %}
