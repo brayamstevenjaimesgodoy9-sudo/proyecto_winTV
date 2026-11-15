@@ -64,3 +64,11 @@ urlpatterns += [
         name="actualizar_estado_orden",
     ),
 ]
+
+# HU-19: Historial y detalle de incidencias (solo lectura)
+from . import historial_views
+
+urlpatterns += [
+    path("historial/", historial_views.historial_incidencias, name="historial"),
+    path("historial/<int:incidencia_id>/", historial_views.detalle_historial, name="historial_detalle"),
+]

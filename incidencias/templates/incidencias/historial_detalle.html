@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}Historial de incidencia #{{ incidencia.id_incidencia }} | WinTV{% endblock %}
+{% block contenido %}
+<style>
+  .hu19-info { display:grid; grid-template-columns:repeat(2, minmax(220px,1fr)); gap:14px; margin:24px 0; }
+  .hu19-info div { padding:12px 16px; background:#f3f6fb; border-radius:9px; }
+  .hu19-info strong { color:#16366b; }
+  .hu19-orden { border:1px solid #dfe7f3; padding:18px; border-radius:12px; margin:14px 0; }
+  .hu19-orden p { margin:8px 0; overflow-wrap:anywhere; }
+  .hu19-volver { color:#173a73; font-weight:700; text-decoration:none; }
+  @media (max-width:700px) { .hu19-info { grid-template-columns:1fr; } }
+</style>
+<section class="tarjeta wintv-inc-panel">
+  <a class="hu19-volver" href="{% url 'incidencias:historial' %}">← Volver al historial</a>
+  <h1>Incidencia #{{ incidencia.id_incidencia }}</h1>
+  <p>HU-19: detalle del reporte y órdenes de trabajo vinculadas.</p>
+
+  <h2>Información del reporte</h2>
+  <div class="hu19-info">
+    <div><strong>Fecha:</strong> {{ incidencia.fecha_reporte|date:"d/m/Y H:i" }}</div>
+    <div><strong>Cliente:</strong> {{ incidencia.id_cliente }}</div>
+    <div><strong>Contrato:</strong> {{ incidencia.id_contrato }}</div>
+    <div><strong>Tipo:</strong> {{ incidencia.tipo_averia.nombre }}</div>
+    <div><strong>Prioridad:</strong> {{ incidencia.prioridad }}</div>
+    <div><strong>Estado actual:</strong> {{ incidencia.estado }}</div>
+    <div><strong>Canal:</strong> {{ incidencia.canal_reporte }}</div>
+    <div><strong>Ubicación:</strong> {{ incidencia.ubicacion }}</div>
+  </div>
+  <p><strong>Descripción:</strong> {{ incidencia.descripcion }}</p>
+
+  <hr>
+  <h2>Seguimiento y órdenes relacionadas</h2>
+  <p>Los estados y diagnósticos mostrados son los valores actuales. Esta vista no inventa fechas de cambios anteriores.</p>
+  {% for orden in ordenes %}
+  <div class="hu19-orden">
+    <h3>Orden #{{ orden.id_orden }} — {{ orden.tipo_orden }}</h3>
+    <p><strong>Creada:</strong> {{ orden.fecha_creacion|date:"d/m/Y H:i" }}</p>
+    <p><strong>Programada para:</strong> {% if orden.fecha_programada %}{{ orden.fecha_programada|date:"d/m/Y H:i" }}{% else %}Sin programar{% endif %}</p>
+    <p><strong>Estado actual:</strong> {{ orden.estado }}</p>
+    <p><strong>Diagnóstico técnico:</strong> {{ orden.diagnostico|default:"Pendiente" }}</p>
+    <p><strong>Solución:</strong> {{ orden.solucion|default:"No registrada" }}</p>
+    <p><strong>Observaciones:</strong> {{ orden.observaciones|default:"Sin observaciones" }}</p>
+  </div>
+  {% empty %}
+  <p>Esta incidencia todavía no tiene órdenes de trabajo relacionadas.</p>
+  {% endfor %}
+</section>
+{% endblock %}
