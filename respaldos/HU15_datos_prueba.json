@@ -1,0 +1,18 @@
+[
+    {
+        "id_asignacion": 1,
+        "orden_id": 2,
+        "tecnico__username": "tecnico1",
+        "fecha_asignacion": "2026-11-15 07:43:24.754945+00:00",
+        "estado": "ASIGNADO",
+        "observaciones": "Realizar instalación del servicio de internet. Verificar conexión y funcionamiento del equipo."
+    },
+    {
+        "id_asignacion": 2,
+        "orden_id": 3,
+        "tecnico__username": "tecnico3",
+        "fecha_asignacion": "2026-11-15 08:07:13.228740+00:00",
+        "estado": "ASIGNADO",
+        "observaciones": "hoila"
+    }
+]

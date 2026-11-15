@@ -100,6 +100,11 @@ def menu_wintv(request):
                     "url": "/incidencias/listar/",
                 },
                 {
+                    # HU-15
+                    "nombre": "📋 Asignar órdenes de trabajo",
+                    "url": "/incidencias/asignar-orden/",
+                },
+                {
                     # HU-16
                     "nombre": "🩺 Diagnósticos técnicos",
                     "url": "/incidencias/diagnosticos/",
