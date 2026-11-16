@@ -1,73 +1,104 @@
-<h2>HU-17: Registrar materiales utilizados</h2>
 
-{% if messages %}
-    {% for message in messages %}
-        <p>{{ message }}</p>
-    {% endfor %}
-{% endif %}
+{% extends "base.html" %}
 
-{% if form.non_field_errors %}
-    {{ form.non_field_errors }}
-{% endif %}
+{% block titulo %}Registrar materiales utilizados | WinTV{% endblock %}
 
-<h3>Materiales entregados para reparación</h3>
+{% block contenido %}
 
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>Orden</th>
-            <th>Material</th>
-            <th>Entregado</th>
-            <th>Utilizado</th>
-            <th>Devuelto</th>
-            <th>Disponible</th>
-            <th>Registrar uso adicional</th>
-        </tr>
-    </thead>
+<div class="tarjeta">
 
-    <tbody>
-        {% for detalle in detalles %}
-        <tr>
-            <td>{{ detalle.entrega.orden_id }}</td>
-            <td>{{ detalle.producto.nombre }}</td>
-            <td>{{ detalle.cantidad_entregada }}</td>
-            <td>{{ detalle.cantidad_utilizada }}</td>
-            <td>{{ detalle.cantidad_devuelta }}</td>
+    <h2>Registrar materiales utilizados</h2>
 
-           <td>
-    {{ detalle.disponible }}
-</td>
+    <p>
+        Registre la cantidad de materiales utilizados
+        durante las reparaciones de los clientes.
+    </p>
 
-            <td>
-                <form method="post">
-                    {% csrf_token %}
+    {% if form.non_field_errors %}
+        <div role="alert">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
 
-                    <input
-                        type="hidden"
-                        name="detalle_id"
-                        value="{{ detalle.pk }}"
-                    >
+    <h3>Materiales entregados para reparación</h3>
 
-                    <input
-                        type="number"
-                        name="cantidad"
-                        min="1"
-                        required
-                    >
+    <div class="wintv-busqueda-tabla-contenedor">
 
-                    <button type="submit">
-                        Registrar
-                    </button>
-                </form>
-            </td>
-        </tr>
+        <table class="wintv-busqueda-tabla">
 
-        {% empty %}
-        <tr>
-            <td colspan="7">
-                No hay materiales entregados disponibles.
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            <thead>
+                <tr>
+                    <th>Orden</th>
+                    <th>Material</th>
+                    <th>Entregado</th>
+                    <th>Utilizado</th>
+                    <th>Devuelto</th>
+                    <th>Disponible</th>
+                    <th>Registrar uso adicional</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for detalle in detalles %}
+
+                <tr>
+                    <td>{{ detalle.entrega.orden_id }}</td>
+
+                    <td>{{ detalle.producto.nombre }}</td>
+
+                    <td>{{ detalle.cantidad_entregada }}</td>
+
+                    <td>{{ detalle.cantidad_utilizada }}</td>
+
+                    <td>{{ detalle.cantidad_devuelta }}</td>
+
+                    <td>
+                        <strong>{{ detalle.disponible }}</strong>
+                    </td>
+
+                    <td>
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="detalle_id"
+                                value="{{ detalle.pk }}"
+                            >
+
+                            <input
+                                type="number"
+                                name="cantidad"
+                                min="1"
+                                max="{{ detalle.disponible }}"
+                                placeholder="Cantidad"
+                                aria-label="Cantidad adicional utilizada"
+                                style="width: 105px; padding: 10px;"
+                                required
+                            >
+
+                            <button type="submit" class="btn">
+                                Registrar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="7">
+                        No hay materiales entregados disponibles.
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
