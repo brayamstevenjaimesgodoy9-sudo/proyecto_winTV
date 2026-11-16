@@ -6,12 +6,16 @@ from almacen.models import OrdenTrabajo
 class AsignacionTecnicoForm(forms.Form):
     orden = forms.ModelChoiceField(
         queryset=OrdenTrabajo.objects.none(),
-        label="Orden de trabajo"
+        label="Orden de trabajo",
+        empty_label="Seleccione una orden de trabajo"
+
     )
 
     tecnico = forms.ModelChoiceField(
         queryset=get_user_model().objects.none(),
-        label="Técnico"
+        label="Técnico",
+        empty_label="Seleccione un técnico"
+
     )
 
     observaciones = forms.CharField(

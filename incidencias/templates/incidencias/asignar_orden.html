@@ -12,6 +12,9 @@
     margin: 0 auto;
     padding: 16px 0 40px;
     color: #183153;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .hu15-encabezado {
@@ -111,7 +114,7 @@
 }
 
 .hu15-cuerpo {
-    padding: 30px;
+    padding: 24px 28px;
 }
 
 /* =========================================================
@@ -180,9 +183,9 @@
 
 .hu15-ayuda {
     display: block;
-    margin-top: 8px;
+    margin-top: 7px;
     color: #64748b;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
 }
 
@@ -545,9 +548,6 @@
 
     <!-- ENCABEZADO -->
     <div class="hu15-encabezado">
-        <span class="hu15-etiqueta">
-            GESTIÓN TÉCNICA · HU-15
-        </span>
 
         <h1>Asignación de órdenes de trabajo</h1>
 
@@ -735,8 +735,14 @@
                     </span>
 
                     <span class="hu15-contador">
-                        {{ asignaciones|length }}
-                        asignación(es) registrada(s)
+                        {% with total=asignaciones|length %}
+                            {{ total }}
+                            {% if total == 1 %}
+                                asignación registrada
+                            {% else %}
+                                asignaciones registradas
+                            {% endif %}
+                        {% endwith %}
                     </span>
                 </div>
 

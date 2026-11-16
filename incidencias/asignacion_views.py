@@ -50,20 +50,20 @@ def asignar_orden_tecnico(request):
             try:
                 duplicado = AsignacionTecnico.objects.filter(
                     orden=orden,
-                    tecnico=tecnico
+                    estado__in=["ASIGNADO", "EN_PROCESO"]
                 ).exists()
 
                 if duplicado:
                     formulario.add_error(
-                        "tecnico",
-                        "Este técnico ya está asignado a esta orden."
+                        "orden",
+                        "Esta orden ya tiene un técnico responsable asignado."
                     )
 
                 else:
                     # 5. Registrar la asignación en Oracle
                     with transaction.atomic():
 
-                        # Volver a verificar el estado de la orden
+                        # Bloquear la orden y verificar su estado
                         orden_actual = (
                             OrdenTrabajo.objects
                             .select_for_update()
@@ -81,11 +81,11 @@ def asignar_orden_tecnico(request):
 
                         elif AsignacionTecnico.objects.filter(
                             orden=orden_actual,
-                            tecnico=tecnico
+                            estado__in=["ASIGNADO", "EN_PROCESO"]
                         ).exists():
                             formulario.add_error(
-                                "tecnico",
-                                "Este técnico ya está asignado a esta orden."
+                                "orden",
+                                "Esta orden ya tiene un técnico responsable asignado."
                             )
 
                         else:
@@ -184,28 +184,37 @@ def editar_asignacion_tecnico(request, pk):
             try:
                 with transaction.atomic():
 
-                    # Bloquear el registro mientras se modifica
+                    # Bloquear primero la orden de trabajo
+                    # para coordinar registro y edición
+                    orden_actual = (
+                        OrdenTrabajo.objects
+                        .select_for_update()
+                        .get(pk=asignacion.orden_id)
+                    )
+
+                    # Bloquear después la asignación
                     asignacion_actual = (
                         AsignacionTecnico.objects
                         .select_for_update()
                         .get(pk=pk)
                     )
 
-                    # No permitir editar asignaciones canceladas
+                    # Solo permitir editar asignaciones ASIGNADO
                     if asignacion_actual.estado != "ASIGNADO":
                         formulario.add_error(
                             None,
                             "Solo se pueden editar asignaciones en estado ASIGNADO."
                         )
 
-                    # Evitar asignar el mismo técnico dos veces
+                    # Evitar otro responsable activo
+                    # para la misma orden
                     elif AsignacionTecnico.objects.filter(
-                        orden=asignacion_actual.orden,
-                        tecnico=nuevo_tecnico
+                        orden=orden_actual,
+                        estado__in=["ASIGNADO", "EN_PROCESO"]
                     ).exclude(pk=pk).exists():
                         formulario.add_error(
                             "tecnico",
-                            "Este técnico ya está asignado a esta orden."
+                            "Esta orden ya tiene otro técnico responsable activo."
                         )
 
                     else:
