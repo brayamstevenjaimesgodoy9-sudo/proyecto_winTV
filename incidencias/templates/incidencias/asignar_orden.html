@@ -899,6 +899,14 @@
         tabNueva.setAttribute("aria-selected", String(nueva));
         tabConsulta.setAttribute("aria-selected", String(!nueva));
     }
+        // Abrir Consultar asignaciones después de guardar una edición
+    document.addEventListener("DOMContentLoaded", function () {
+        const parametros = new URLSearchParams(window.location.search);
+
+        if (parametros.get("pestana") === "consulta") {
+            mostrarPestanaHU15("consulta");
+        }
+    });
 </script>
 
 {% endblock %}

@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
+from django.urls import reverse
 
 from almacen.models import OrdenTrabajo, AsignacionTecnico
 
@@ -236,7 +237,8 @@ def editar_asignacion_tecnico(request, pk):
                         )
 
                         return redirect(
-                            "incidencias:asignar_orden_tecnico"
+                            reverse("incidencias:asignar_orden_tecnico")
+                            + "?pestana=consulta"
                         )
 
             except DatabaseError:
