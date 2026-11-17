@@ -1,6 +1,7 @@
 
 from django.urls import path
 from . import views
+from . import reportes_views
 
 urlpatterns = [
     # Página principal del almacén
@@ -22,4 +23,10 @@ path(
     views.registrar_materiales_usados,
     name="registrar_materiales_usados",
 ),
+    # HU-12: Reportes de movimientos de almacén
+    path(
+        "reportes/",
+        reportes_views.reporte_movimientos,
+        name="reporte_movimientos",
+    ),
 ]

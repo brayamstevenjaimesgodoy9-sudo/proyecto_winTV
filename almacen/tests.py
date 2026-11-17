@@ -894,3 +894,553 @@ class RegistrarMaterialUtilizadoRegistroTests(SimpleTestCase):
 
         self.assertNotIn("stock_actual", argumentos)
 
+# HU-11: PRUEBAS DE DEVOLUCIONES
+
+from .models import DetalleEntrega
+from .services import registrar_devolucion_materiales
+
+class DevolucionMaterialesTests(SimpleTestCase):
+
+    def setUp(self):
+        self.contexto = ExitStack()
+        self.addCleanup(self.contexto.close)
+
+        def simular(ruta):
+            return self.contexto.enter_context(patch(ruta))
+
+        simular(
+            "almacen.services.transaction.atomic"
+        ).return_value = nullcontext()
+
+        self.entregas = simular(
+            "almacen.services.EntregaMaterial.objects.select_for_update"
+        )
+        self.entregas.return_value.get.return_value = SimpleNamespace(
+            pk=4, estado="ENTREGADA"
+        )
+
+        self.detalles = simular(
+            "almacen.services.DetalleEntrega.objects.select_for_update"
+        )
+        self.detalles.return_value.get.return_value = SimpleNamespace(
+            producto_id=3,
+            cantidad_entregada=8,
+            cantidad_utilizada=2,
+            cantidad_devuelta=1,
+        )
+
+        self.actualizar_detalle = simular(
+            "almacen.services.DetalleEntrega.objects.filter"
+        )
+        self.actualizar_detalle.return_value.update.return_value = 1
+
+        self.actualizar_producto = simular(
+            "almacen.services.Producto.objects.filter"
+        )
+        self.actualizar_producto.return_value.update.return_value = 1
+
+        self.movimientos = simular(
+            "almacen.services.MovimientoAlmacen.objects.create"
+        )
+
+        self.usuario = SimpleNamespace(
+            pk=7,
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+    def devolver(self, cantidad=2, detalles=None, usuario=None):
+        return registrar_devolucion_materiales(
+            entrega_id=4,
+            detalles=detalles if detalles is not None else [
+                {"detalle_id": 10, "cantidad": cantidad}
+            ],
+            usuario=usuario if usuario is not None else self.usuario,
+        )
+
+    def test_devolucion_correcta(self):
+        resultado = self.devolver()
+
+        self.assertEqual(resultado.pk, 4)
+        self.actualizar_detalle.return_value.update.assert_called_once()
+        self.actualizar_producto.return_value.update.assert_called_once()
+        self.movimientos.assert_called_once()
+
+        datos = self.movimientos.call_args.kwargs
+        self.assertEqual(datos["tipo_movimiento"], "DEVOLUCION")
+        self.assertEqual(datos["cantidad"], 2)
+        self.assertEqual(datos["producto_id"], 3)
+
+    def test_rechaza_cantidad_excesiva(self):
+        with self.assertRaises(ValidationError):
+            self.devolver(cantidad=6)
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_detalles_duplicados(self):
+        with self.assertRaises(ValidationError):
+            self.devolver(detalles=[
+                {"detalle_id": 10, "cantidad": 1},
+                {"detalle_id": 10, "cantidad": 1},
+            ])
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_entrega_finalizada(self):
+        self.entregas.return_value.get.return_value.estado = (
+            "FINALIZADA"
+        )
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_detalle_de_otra_entrega(self):
+        self.detalles.return_value.get.side_effect = (
+            DetalleEntrega.DoesNotExist
+        )
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_fallo_de_actualizacion_stock(self):
+        self.actualizar_producto.return_value.update.return_value = 0
+
+        with self.assertRaises(ValidationError):
+            self.devolver()
+
+        self.movimientos.assert_not_called()
+
+    def test_rechaza_usuario_sin_permisos(self):
+        usuario = SimpleNamespace(
+            is_authenticated=False,
+            is_superuser=False,
+        )
+
+        with self.assertRaises(PermissionDenied):
+            self.devolver(usuario=usuario)
+
+        self.movimientos.assert_not_called()
+
+class DevolucionVistaTests(SimpleTestCase):
+    """Pruebas HTTP de la integración de HU-11."""
+
+    def ejecutar(self, valido=True, error=None):
+        request = RequestFactory().post(
+            "/almacen/",
+            {"accion": "registrar_devolucion"},
+        )
+
+        usuario = MagicMock()
+        usuario.is_authenticated = True
+        usuario.is_superuser = True
+        usuario.pk = 7
+        request.user = usuario
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = valido
+        formulario.cleaned_data = {
+            "detalle": SimpleNamespace(pk=10, entrega_id=4),
+            "cantidad": 2,
+            "observaciones": "Material no utilizado",
+        }
+
+        with (
+            patch(
+                "almacen.views.DevolucionMaterialForm",
+                return_value=formulario,
+            ) as clase_formulario,
+            patch(
+                "almacen.views.registrar_devolucion_materiales"
+            ) as servicio,
+            patch("almacen.views.messages.success") as mensaje,
+            patch(
+                "almacen.views.logger.exception"
+            ) as registrar_error,
+            patch(
+                "almacen.views.render",
+                return_value=HttpResponse("Almacén"),
+            ),
+        ):
+            servicio.return_value = SimpleNamespace(pk=4)
+            servicio.side_effect = error
+
+            respuesta = inicio_almacen(request)
+
+            return (
+                respuesta,
+                formulario,
+                clase_formulario,
+                servicio,
+                mensaje,
+                registrar_error,
+            )
+
+    def test_devolucion_valida_invoca_servicio(self):
+        respuesta, formulario, clase, servicio, mensaje, _ = (
+            self.ejecutar()
+        )
+
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(clase.call_count, 2)
+        self.assertEqual(
+            clase.call_args.args[0].get("accion"),
+            "registrar_devolucion",
+        )
+        servicio.assert_called_once()
+
+        datos = servicio.call_args.kwargs
+        self.assertEqual(datos["entrega_id"], 4)
+        self.assertEqual(
+            datos["detalles"],
+            [{"detalle_id": 10, "cantidad": 2}],
+        )
+        self.assertEqual(datos["usuario"].pk, 7)
+        mensaje.assert_called_once()
+
+    def test_formulario_invalido_no_registra(self):
+        respuesta, _, _, servicio, mensaje, _ = (
+            self.ejecutar(valido=False)
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_not_called()
+        mensaje.assert_not_called()
+
+    def test_error_de_validacion_se_muestra(self):
+        respuesta, formulario, _, servicio, mensaje, _ = (
+            self.ejecutar(
+                error=ValidationError(
+                    "Cantidad superior a la disponible."
+                )
+            )
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_called_once()
+        formulario.add_error.assert_called_once()
+        mensaje.assert_not_called()
+
+    def test_error_de_oracle_se_controla(self):
+        respuesta, formulario, _, servicio, mensaje, registro = (
+            self.ejecutar(
+                error=DatabaseError("Error simulado de Oracle")
+            )
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        servicio.assert_called_once()
+        formulario.add_error.assert_called_once()
+        registro.assert_called_once()
+        mensaje.assert_not_called()
+
+
+# HU-12: pruebas de reportes de movimientos
+from datetime import date
+from django.utils import timezone
+from django.core.paginator import Paginator
+from .forms import ReporteMovimientosForm
+from .reportes import obtener_movimientos_reporte
+from .reportes_views import reporte_movimientos
+
+
+class ReporteMovimientosHu12Tests(SimpleTestCase):
+
+    def test_rechaza_rango_de_fechas_invalido(self):
+        formulario = ReporteMovimientosForm(data={
+            "fecha_desde": "2026-11-10",
+            "fecha_hasta": "2026-11-05",
+        })
+
+        self.assertFalse(formulario.is_valid())
+        self.assertIn("fecha_hasta", formulario.errors)
+
+    def test_consulta_aplica_todos_los_filtros(self):
+        consulta = MagicMock()
+        consulta.order_by.return_value = consulta
+        consulta.filter.return_value = consulta
+
+        with patch(
+            "almacen.reportes."
+            "MovimientoAlmacen.objects.select_related",
+            return_value=consulta,
+        ) as seleccionar:
+            resultado = obtener_movimientos_reporte({
+                "fecha_desde": date(2026, 11, 1),
+                "fecha_hasta": date(2026, 11, 10),
+                "tipo_movimiento": "DEVOLUCION",
+                "producto": SimpleNamespace(pk=7),
+            })
+
+        self.assertIs(resultado, consulta)
+        seleccionar.assert_called_once_with("producto")
+        self.assertEqual(consulta.filter.call_count, 4)
+
+        filtros = [
+            llamada.kwargs
+            for llamada in consulta.filter.call_args_list
+        ]
+
+        self.assertIn("fecha_movimiento__gte", filtros[0])
+        self.assertIn("fecha_movimiento__lte", filtros[1])
+        self.assertEqual(
+            filtros[2], {"tipo_movimiento": "DEVOLUCION"}
+        )
+        self.assertEqual(filtros[3], {"producto_id": 7})
+
+    def test_usuario_autenticado_sin_rol_almacen_puede_consultar(self):
+        peticion = RequestFactory().get("/almacen/reportes/")
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=False,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {}
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+                return_value=[],
+            ) as consulta,
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Reporte"),
+            ) as renderizar,
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertEqual(respuesta.status_code, 200)
+        consulta.assert_called_once_with({})
+        renderizar.assert_called_once()
+
+    def test_paginacion_muestra_25_registros(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/", {"pagina": "2"}
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {}
+
+        movimientos = [
+            SimpleNamespace(pk=numero)
+            for numero in range(1, 31)
+        ]
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+                return_value=movimientos,
+            ),
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Reporte"),
+            ) as renderizar,
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        pagina = renderizar.call_args.args[2]["pagina"]
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(pagina.number, 2)
+        self.assertEqual(pagina.paginator.per_page, 25)
+        self.assertEqual(len(pagina.object_list), 5)
+        self.assertEqual(pagina.object_list[0].pk, 26)
+
+    def test_plantilla_conserva_filtros_al_paginar(self):
+        movimientos = [
+            SimpleNamespace(
+                pk=numero,
+                fecha_movimiento=timezone.now(),
+                producto=SimpleNamespace(nombre="Cable"),
+                tipo_movimiento="ENTRADA",
+                cantidad=1,
+                id_usuario=1,
+                motivo="Prueba",
+                observaciones=None,
+            )
+            for numero in range(30)
+        ]
+
+        pagina = Paginator(movimientos, 25).get_page(2)
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"tipo_movimiento": "ENTRADA", "pagina": "2"},
+        )
+        peticion.user = SimpleNamespace(is_authenticated=False)
+
+        html = render_to_string(
+            "almacen/reporte_movimientos.html",
+            {"filtro_form": "", "pagina": pagina},
+            request=peticion,
+        )
+
+        self.assertIn("Página 2", html)
+        self.assertIn("Página anterior", html)
+        self.assertIn("tipo_movimiento=ENTRADA", html)
+
+
+# HU-12: validación de exportación CSV
+import csv
+import io
+
+from .exportaciones import (
+    LIMITE_EXPORTACION,
+    exportar_movimientos_csv,
+    proteger_celda,
+)
+
+
+class ExportacionMovimientosHu12Tests(SimpleTestCase):
+
+    def test_protege_formulas_de_excel(self):
+        for valor in ("=1+1", "+COMANDO", "-FORMULA", "@FUNCION"):
+            with self.subTest(valor=valor):
+                self.assertTrue(proteger_celda(valor).startswith("'"))
+
+        self.assertTrue(
+            proteger_celda("  =1+1").startswith("'")
+        )
+        self.assertEqual(proteger_celda("Cable óptico"), "Cable óptico")
+        self.assertEqual(proteger_celda(None), "")
+
+    def test_csv_utf8_y_contenido(self):
+        movimiento = SimpleNamespace(
+            pk=15,
+            fecha_movimiento=timezone.now(),
+            producto=SimpleNamespace(
+                codigo="=1+1",
+                nombre="Cable óptico",
+            ),
+            tipo_movimiento="DEVOLUCION",
+            cantidad=3,
+            id_usuario=7,
+            motivo="Material recuperado",
+            observaciones="Sin daños",
+        )
+
+        consulta = MagicMock()
+        consulta.__getitem__.return_value.iterator.return_value = (
+            iter([movimiento])
+        )
+
+        respuesta = exportar_movimientos_csv(consulta)
+
+        self.assertTrue(respuesta.content.startswith(b"\xef\xbb\xbf"))
+
+        contenido = respuesta.content.decode("utf-8-sig")
+        filas = list(csv.reader(
+            io.StringIO(contenido),
+            delimiter=";",
+        ))
+
+        self.assertEqual(len(filas), 2)
+        self.assertEqual(filas[1][0], "15")
+        self.assertEqual(filas[1][2], "'=1+1")
+        self.assertEqual(filas[1][3], "Cable óptico")
+        self.assertEqual(filas[1][4], "DEVOLUCION")
+        self.assertEqual(filas[1][5], "3")
+
+    def test_exportacion_aplica_limite(self):
+        consulta = MagicMock()
+        consulta.__getitem__.return_value.iterator.return_value = iter([])
+
+        exportar_movimientos_csv(consulta)
+
+        consulta.__getitem__.assert_called_once_with(
+            slice(None, LIMITE_EXPORTACION)
+        )
+
+    def test_descarga_http_autorizada(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"formato": "csv", "tipo_movimiento": "ENTRADA"},
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {
+            "tipo_movimiento": "ENTRADA"
+        }
+
+        respuesta_csv = HttpResponse(
+            "CSV de prueba",
+            content_type="text/csv",
+        )
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+            ) as consultar,
+            patch(
+                "almacen.reportes_views.exportar_movimientos_csv",
+                return_value=respuesta_csv,
+            ) as exportar,
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertIs(respuesta, respuesta_csv)
+        consultar.assert_called_once_with(
+            formulario.cleaned_data
+        )
+        exportar.assert_called_once_with(consultar.return_value)
+
+    def test_filtros_invalidos_no_generan_csv(self):
+        peticion = RequestFactory().get(
+            "/almacen/reportes/",
+            {"formato": "csv"},
+        )
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=True,
+        )
+
+        formulario = MagicMock()
+        formulario.is_valid.return_value = False
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.exportar_movimientos_csv",
+            ) as exportar,
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+            ) as consultar,
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Filtros inválidos"),
+            ),
+        ):
+            respuesta = reporte_movimientos(peticion)
+
+        self.assertEqual(respuesta.status_code, 200)
+        exportar.assert_not_called()
+        consultar.assert_not_called()

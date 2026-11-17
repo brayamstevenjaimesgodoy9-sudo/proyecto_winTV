@@ -1,0 +1,194 @@
+/* WINTV ENTERPRISE | REPORTES HU-12 */
+/* Estilos limitados a la pantalla de reportes */
+
+.reporte-panel.reporte-enterprise {
+    max-width: 1320px;
+    margin: 0 auto;
+    color: #21354b;
+}
+
+.reporte-panel.reporte-enterprise > header {
+    padding: 8px 0 5px;
+    margin-bottom: 27px;
+}
+
+.reporte-enterprise > header::before {
+    content: "ALMACÉN / ANALÍTICA";
+    display: block;
+    margin-bottom: 12px;
+    color: #0b6486;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1.4px;
+}
+
+.reporte-enterprise > header h1 {
+    margin: 0 0 11px;
+    color: #102a43;
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 750;
+    letter-spacing: -.8px;
+    line-height: 1.25;
+}
+
+.reporte-enterprise .reporte-descripcion {
+    max-width: 720px;
+    color: #6b7c93;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.reporte-enterprise > .tarjeta {
+    margin-bottom: 24px;
+    padding: 27px 30px;
+    border: 1px solid #e0e8f0;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 18px rgba(16,42,67,.045);
+}
+
+.reporte-enterprise .tarjeta h2 {
+    margin: 0 0 19px;
+    color: #102a43;
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -.3px;
+}
+
+.reporte-enterprise .reporte-form {
+    gap: 20px;
+}
+
+.reporte-enterprise .reporte-form label {
+    color: #334b64;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.reporte-enterprise .reporte-form input,
+.reporte-enterprise .reporte-form select {
+    min-height: 44px;
+    padding: 11px 13px;
+    border: 1px solid #cfdae5;
+    border-radius: 9px;
+    background: #fff;
+    color: #21354b;
+    font: inherit;
+}
+
+.reporte-enterprise .reporte-form input:focus-visible,
+.reporte-enterprise .reporte-form select:focus-visible {
+    outline: 3px solid rgba(24,168,232,.35);
+    outline-offset: 2px;
+    border-color: #0b6486;
+}
+
+.reporte-enterprise .reporte-acciones {
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.reporte-enterprise .reporte-acciones .btn {
+    min-height: 43px;
+    padding: 11px 19px;
+    border: 1px solid #0b6486;
+    border-radius: 9px;
+    background: #0b6486;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.reporte-enterprise .reporte-acciones .btn:hover {
+    background: #084e69;
+}
+
+.reporte-enterprise .reporte-enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: 43px;
+    padding: 9px 13px;
+    border-radius: 8px;
+    color: #0b6486;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.reporte-enterprise .reporte-enlace:hover {
+    background: #eef7fc;
+}
+
+.reporte-enterprise .reporte-exportar {
+    border: 1px solid #d1e4ee;
+    background: #f0f8fc;
+}
+
+.reporte-enterprise .reporte-tabla-contenedor {
+    overflow-x: auto;
+    border: 1px solid #e3eaf1;
+    border-radius: 10px;
+}
+
+.reporte-enterprise .reporte-tabla {
+    min-width: 920px;
+}
+
+.reporte-enterprise .reporte-tabla th {
+    padding: 15px 14px;
+    border-bottom: 1px solid #d9e4ee;
+    background: #edf4f9;
+    color: #29445e;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.reporte-enterprise .reporte-tabla td {
+    padding: 14px;
+    border-bottom: 1px solid #edf1f5;
+    color: #40546a;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.reporte-enterprise .reporte-tabla tbody tr:hover {
+    background: #f5faff;
+}
+
+.reporte-enterprise .reporte-paginacion {
+    padding-top: 12px;
+    color: #64788d;
+    font-size: 12px;
+}
+
+.reporte-enterprise .reporte-paginacion a {
+    color: #0b6486;
+    font-weight: 700;
+}
+
+.reporte-enterprise .reporte-vacio {
+    color: #718397;
+    line-height: 1.7;
+}
+
+.reporte-enterprise .reporte-enlace:focus-visible,
+.reporte-enterprise .reporte-acciones .btn:focus-visible,
+.reporte-enterprise .reporte-paginacion a:focus-visible {
+    outline: 3px solid #18a8e8;
+    outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+    .reporte-enterprise > .tarjeta {
+        padding: 19px 16px;
+    }
+
+    .reporte-enterprise .tarjeta h2 {
+        font-size: 17px;
+    }
+
+    .reporte-enterprise .reporte-acciones {
+        align-items: stretch;
+    }
+}

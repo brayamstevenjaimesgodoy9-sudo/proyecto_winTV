@@ -4,7 +4,7 @@ def menu_wintv(request):
 
     menu = [
         {
-            "nombre": "🏠 Inicio",
+            "nombre": "Inicio",
             "url": "/",
         }
     ]
@@ -12,6 +12,11 @@ def menu_wintv(request):
     roles = set()
 
     if usuario.is_authenticated:
+        # HU-12: consulta disponible para todo usuario autenticado.
+        menu.append({
+            "nombre": "Reportes de almacén",
+            "url": "/almacen/reportes/",
+        })
         roles = {
             nombre.strip().upper()
             for nombre in usuario.groups.values_list(
@@ -31,11 +36,11 @@ def menu_wintv(request):
         }):
             menu.extend([
                 {
-                    "nombre": "👥 Registrar clientes",
+                    "nombre": "Registrar clientes",
                     "url": "/clientes/registrar/",
                 },
                 {
-                    "nombre": "🔎 Buscar clientes",
+                    "nombre": "Buscar clientes",
                     "url": "/clientes/buscar/",
                 },
             ])
@@ -45,7 +50,7 @@ def menu_wintv(request):
         # ==========================================
         if "ADMINISTRADOR" in roles:
             menu.append({
-                "nombre": "🔐 Usuarios",
+                "nombre": "Usuarios",
                 "url": "/usuarios/listar/",
             })
 
@@ -58,11 +63,11 @@ def menu_wintv(request):
         }):
             menu.extend([
                 {
-                    "nombre": "📦 Almacén",
+                    "nombre": "Almacén",
                     "url": "/almacen/",
                 },
                 {
-                    "nombre": "🖥️ Asignar equipos a clientes",
+                    "nombre": "Asignar equipos a clientes",
                     "url": "/almacen/equipos-clientes/asignar/",
                 },
             ])
@@ -72,7 +77,7 @@ def menu_wintv(request):
             "TECNICO",
         }):
             menu.append({
-                "nombre": "🔧 Registrar materiales utilizados",
+                "nombre": "Registrar materiales utilizados",
                 "url": "/almacen/materiales-usados/",
             })
         # ==========================================
@@ -84,7 +89,7 @@ def menu_wintv(request):
             "CAJA",
         }):
             menu.append({
-                "nombre": "📄 Consultar contratos",
+                "nombre": "Consultar contratos",
                 "url": "/servicios/contratos/",
             })
 
@@ -99,27 +104,27 @@ def menu_wintv(request):
             menu.extend([
                 {
                     # HU-13
-                    "nombre": "🛠 Registrar incidencias",
+                    "nombre": "Registrar incidencias",
                     "url": "/incidencias/registrar/",
                 },
                 {
                     # HU-13 y HU-14
-                    "nombre": "📋 Consultar incidencias",
+                    "nombre": "Consultar incidencias",
                     "url": "/incidencias/listar/",
                 },
                 {
                     # HU-15
-                    "nombre": "📋 Asignar órdenes de trabajo",
+                    "nombre": "Asignar órdenes de trabajo",
                     "url": "/incidencias/asignar-orden/",
                 },
                 {
                     # HU-16
-                    "nombre": "🩺 Diagnósticos técnicos",
+                    "nombre": "Diagnósticos técnicos",
                     "url": "/incidencias/diagnosticos/",
                 },
                 {
                     # HU-18
-                    "nombre": "🔄 Estados de órdenes",
+                    "nombre": "Estados de órdenes",
                     "url": "/incidencias/ordenes/estados/",
                 },
                 {
@@ -133,9 +138,72 @@ def menu_wintv(request):
 
     else:
         menu.append({
-            "nombre": "🔑 Iniciar sesión",
+            "nombre": "Iniciar sesión",
             "url": "/usuarios/login/",
         })
+
+    # wintv_nav_metadata: presentación visual del menú.
+    # No cambia los permisos ni los destinos de navegación.
+    navegacion = {
+        "/": ("GENERAL", "home", 0),
+        "/usuarios/login/": ("GENERAL", "log-in", 1),
+
+        "/clientes/registrar/": (
+            "GESTIÓN COMERCIAL", "user-plus", 10
+        ),
+        "/clientes/buscar/": (
+            "GESTIÓN COMERCIAL", "users", 11
+        ),
+        "/servicios/contratos/": (
+            "GESTIÓN COMERCIAL", "file-text", 12
+        ),
+
+        "/almacen/": ("ALMACÉN", "package", 20),
+        "/almacen/equipos-clientes/asignar/": (
+            "ALMACÉN", "monitor", 21
+        ),
+        "/almacen/reportes/": ("ALMACÉN", "activity", 22),
+        "/almacen/materiales-usados/": (
+            "SOPORTE TÉCNICO", "wrench", 30
+        ),
+        "/incidencias/registrar/": (
+            "SOPORTE TÉCNICO", "alert-circle", 31
+        ),
+        "/incidencias/listar/": (
+            "SOPORTE TÉCNICO", "clipboard-list", 32
+        ),
+        "/incidencias/asignar-orden/": (
+            "SOPORTE TÉCNICO", "clipboard-check", 33
+        ),
+        "/incidencias/diagnosticos/": (
+            "SOPORTE TÉCNICO", "stethoscope", 34
+        ),
+        "/incidencias/ordenes/estados/": (
+            "SOPORTE TÉCNICO", "activity", 35
+        ),
+        "/incidencias/historial/": (
+            "SOPORTE TÉCNICO", "history", 36
+        ),
+
+        "/usuarios/listar/": (
+            "ADMINISTRACIÓN", "settings", 50
+        ),
+    }
+
+    for opcion in menu:
+        grupo, icono, _ = navegacion.get(
+            opcion["url"],
+            ("OTROS", "grid", 99),
+        )
+        opcion["grupo"] = grupo
+        opcion["icono"] = icono
+
+    menu.sort(
+        key=lambda opcion: navegacion.get(
+            opcion["url"],
+            ("OTROS", "grid", 99),
+        )[2]
+    )
 
     return {
         "menu_wintv": menu,
