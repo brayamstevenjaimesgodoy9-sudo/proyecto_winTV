@@ -1,6 +1,7 @@
 
 def menu_wintv(request):
     usuario = request.user
+    roles = set()
 
     menu = [
         {
@@ -9,14 +10,8 @@ def menu_wintv(request):
         }
     ]
 
-    roles = set()
-
     if usuario.is_authenticated:
-        # HU-12: consulta disponible para todo usuario autenticado.
-        menu.append({
-            "nombre": "Reportes de almacén",
-            "url": "/almacen/reportes/",
-        })
+
         roles = {
             nombre.strip().upper()
             for nombre in usuario.groups.values_list(
@@ -55,7 +50,7 @@ def menu_wintv(request):
             })
 
         # ==========================================
-        # MODULO DE ALMACEN Y HU-09
+        # ALMACEN
         # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
@@ -71,7 +66,17 @@ def menu_wintv(request):
                     "url": "/almacen/equipos-clientes/asignar/",
                 },
             ])
-        # HU-17: Registrar materiales utilizados en reparación
+
+        # HU-12: Reportes de almacen
+        # Disponible para usuarios autenticados.
+        menu.append({
+            "nombre": "Reportes de almacén",
+            "url": "/almacen/reportes/",
+        })
+
+        # ==========================================
+        # HU-17: MATERIALES UTILIZADOS
+        # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "TECNICO",
@@ -80,8 +85,9 @@ def menu_wintv(request):
                 "nombre": "Registrar materiales utilizados",
                 "url": "/almacen/materiales-usados/",
             })
+
         # ==========================================
-        # HU-02: GESTION DE CONTRATOS
+        # HU-02: CONTRATOS
         # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
@@ -94,45 +100,54 @@ def menu_wintv(request):
             })
 
         # ==========================================
-        # MODULO DE SOPORTE TECNICO
-        # HU-13, HU-16, HU-18 Y HU-19
+        # SOPORTE TECNICO
         # ==========================================
         if roles.intersection({
             "ADMINISTRADOR",
             "TECNICO",
         }):
+
+            # GRUPO DESPLEGABLE:
+            # REGISTRAR, CONSULTAR E HISTORIAL
+            menu.append({
+                "tipo": "grupo",
+                "nombre": "Incidencias",
+                "url": "/incidencias/listar/",
+                "grupo": "SOPORTE TÉCNICO",
+                "icono": "clipboard-list",
+                "orden": 31,
+                "items": [
+                    {
+                        "nombre": "Registrar incidencias",
+                        "url": "/incidencias/registrar/",
+                        "icono": "alert-circle",
+                    },
+                    {
+                        "nombre": "Consultar incidencias",
+                        "url": "/incidencias/listar/",
+                        "icono": "clipboard-list",
+                    },
+                    {
+                        "nombre": "Historial de incidencias",
+                        "url": "/incidencias/historial/",
+                        "icono": "history",
+                    },
+                ],
+            })
+
+            # LAS DEMAS FUNCIONES SE CONSERVAN
             menu.extend([
                 {
-                    # HU-13
-                    "nombre": "Registrar incidencias",
-                    "url": "/incidencias/registrar/",
-                },
-                {
-                    # HU-13 y HU-14
-                    "nombre": "Consultar incidencias",
-                    "url": "/incidencias/listar/",
-                },
-                {
-                    # HU-15
                     "nombre": "Asignar órdenes de trabajo",
                     "url": "/incidencias/asignar-orden/",
                 },
                 {
-                    # HU-16
                     "nombre": "Diagnósticos técnicos",
                     "url": "/incidencias/diagnosticos/",
                 },
                 {
-                    # HU-18
                     "nombre": "Estados de órdenes",
                     "url": "/incidencias/ordenes/estados/",
-                },
-                {
-                    # HU-19
-                    # Texto sin emoji para evitar problemas
-                    # de codificacion.
-                    "nombre": "Historial de incidencias",
-                    "url": "/incidencias/historial/",
                 },
             ])
 
@@ -142,36 +157,57 @@ def menu_wintv(request):
             "url": "/usuarios/login/",
         })
 
-    # wintv_nav_metadata: presentación visual del menú.
-    # No cambia los permisos ni los destinos de navegación.
+    # ==========================================
+    # METADATOS DE NAVEGACION
+    # ==========================================
     navegacion = {
         "/": ("GENERAL", "home", 0),
-        "/usuarios/login/": ("GENERAL", "log-in", 1),
 
+        "/usuarios/login/": (
+            "GENERAL", "log-in", 1
+        ),
+
+        # CLIENTES
         "/clientes/registrar/": (
             "GESTIÓN COMERCIAL", "user-plus", 10
         ),
         "/clientes/buscar/": (
             "GESTIÓN COMERCIAL", "users", 11
         ),
+
+        # CONTRATOS
         "/servicios/contratos/": (
             "GESTIÓN COMERCIAL", "file-text", 12
         ),
 
-        "/almacen/": ("ALMACÉN", "package", 20),
+        # ALMACEN
+        "/almacen/": (
+            "ALMACÉN", "package", 20
+        ),
         "/almacen/equipos-clientes/asignar/": (
             "ALMACÉN", "monitor", 21
         ),
-        "/almacen/reportes/": ("ALMACÉN", "activity", 22),
+        "/almacen/reportes/": (
+            "ALMACÉN", "activity", 22
+        ),
+
+        # SOPORTE TECNICO
         "/almacen/materiales-usados/": (
             "SOPORTE TÉCNICO", "wrench", 30
         ),
+
+        # GRUPO INCIDENCIAS
         "/incidencias/registrar/": (
             "SOPORTE TÉCNICO", "alert-circle", 31
         ),
         "/incidencias/listar/": (
-            "SOPORTE TÉCNICO", "clipboard-list", 32
+            "SOPORTE TÉCNICO", "clipboard-list", 31
         ),
+        "/incidencias/historial/": (
+            "SOPORTE TÉCNICO", "history", 31
+        ),
+
+        # ORDENES Y DIAGNOSTICOS
         "/incidencias/asignar-orden/": (
             "SOPORTE TÉCNICO", "clipboard-check", 33
         ),
@@ -181,28 +217,44 @@ def menu_wintv(request):
         "/incidencias/ordenes/estados/": (
             "SOPORTE TÉCNICO", "activity", 35
         ),
-        "/incidencias/historial/": (
-            "SOPORTE TÉCNICO", "history", 36
-        ),
 
+        # ADMINISTRACION
         "/usuarios/listar/": (
             "ADMINISTRACIÓN", "settings", 50
         ),
     }
 
+    # ==========================================
+    # ASIGNAR GRUPOS E ICONOS
+    # ==========================================
     for opcion in menu:
-        grupo, icono, _ = navegacion.get(
+
+        if opcion.get("tipo") == "grupo":
+
+            for subopcion in opcion["items"]:
+                subopcion["grupo"] = opcion["grupo"]
+
+            continue
+
+        grupo, icono, orden = navegacion.get(
             opcion["url"],
             ("OTROS", "grid", 99),
         )
+
         opcion["grupo"] = grupo
         opcion["icono"] = icono
 
+    # ==========================================
+    # ORDENAR MENU
+    # ==========================================
     menu.sort(
-        key=lambda opcion: navegacion.get(
-            opcion["url"],
-            ("OTROS", "grid", 99),
-        )[2]
+        key=lambda opcion: opcion.get(
+            "orden",
+            navegacion.get(
+                opcion.get("url"),
+                ("OTROS", "grid", 99),
+            )[2],
+        )
     )
 
     return {
