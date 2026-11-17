@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -79,12 +81,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 import os
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': os.environ.get('WINTV_DB_NAME', 'localhost:1521/freepdb1'),
-        'USER': os.environ.get('WINTV_DB_USER', 'WINTV_USER'),
-        'PASSWORD': os.environ.get('WINTV_DB_PASSWORD', ''),
+        'NAME': os.environ['WINTV_DB_NAME'],
+        'USER': os.environ['WINTV_DB_USER'],
+        'PASSWORD': os.environ['WINTV_DB_PASSWORD'],
     }
 }
 
