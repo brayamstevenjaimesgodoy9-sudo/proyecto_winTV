@@ -1191,21 +1191,36 @@ class ReporteMovimientosHu12Tests(SimpleTestCase):
         )
         self.assertEqual(filtros[3], {"producto_id": 7})
 
-    def test_usuario_sin_permisos_recibe_403(self):
+    def test_usuario_autenticado_sin_rol_almacen_puede_consultar(self):
         peticion = RequestFactory().get("/almacen/reportes/")
-        usuario = MagicMock()
-        usuario.is_authenticated = True
-        usuario.is_superuser = False
-        usuario.groups.filter.return_value.exists.return_value = False
-        peticion.user = usuario
+        peticion.user = SimpleNamespace(
+            is_authenticated=True,
+            is_superuser=False,
+        )
 
-        with patch(
-            "almacen.reportes_views.obtener_movimientos_reporte"
-        ) as consulta:
+        formulario = MagicMock()
+        formulario.is_valid.return_value = True
+        formulario.cleaned_data = {}
+
+        with (
+            patch(
+                "almacen.reportes_views.ReporteMovimientosForm",
+                return_value=formulario,
+            ),
+            patch(
+                "almacen.reportes_views.obtener_movimientos_reporte",
+                return_value=[],
+            ) as consulta,
+            patch(
+                "almacen.reportes_views.render",
+                return_value=HttpResponse("Reporte"),
+            ) as renderizar,
+        ):
             respuesta = reporte_movimientos(peticion)
 
-        self.assertEqual(respuesta.status_code, 403)
-        consulta.assert_not_called()
+        self.assertEqual(respuesta.status_code, 200)
+        consulta.assert_called_once_with({})
+        renderizar.assert_called_once()
 
     def test_paginacion_muestra_25_registros(self):
         peticion = RequestFactory().get(

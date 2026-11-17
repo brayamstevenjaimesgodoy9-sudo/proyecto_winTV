@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block titulo %}Almacén | WinTV{% endblock %}
 {% block contenido %}
 
@@ -46,9 +47,88 @@
     gap: 6px;
 }
 </style>
-<div class="almacen-panel">
-<h1>Gestión de Almacén WinTV</h1>
-<p><a class="btn" href="{% url 'reporte_movimientos' %}">Ver reportes de movimientos</a></p>
+
+<link rel="stylesheet" href="{% static 'css/wintv-almacen-enterprise.css' %}">
+<div class="almacen-panel almacen-enterprise">
+
+    <header class="almacen-cabecera">
+        <div class="almacen-etiqueta">
+            CENTRO DE OPERACIONES
+        </div>
+
+        <h1>Gestión de almacén</h1>
+
+        <p>
+            Administra el inventario, las entregas y los
+            movimientos de materiales desde un solo lugar.
+        </p>
+    </header>
+
+    <nav class="almacen-accesos"
+         aria-label="Accesos rápidos de almacén">
+
+<a class="almacen-acceso"
+   href="#almacen-stock">
+    <span class="almacen-acceso-icono">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-package"></use>
+        </svg>
+    </span>
+    <strong>Inventario</strong>
+    <span>Consulta de existencias y niveles de stock.</span>
+    <span class="almacen-acceso-enlace">
+        Consultar stock &rarr;
+    </span>
+</a>
+
+
+<a class="almacen-acceso"
+   href="#almacen-salidas">
+    <span class="almacen-acceso-icono">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-clipboard-check"></use>
+        </svg>
+    </span>
+    <strong>Salidas a técnicos</strong>
+    <span>Entrega de equipos y materiales.</span>
+    <span class="almacen-acceso-enlace">
+        Registrar salida &rarr;
+    </span>
+</a>
+
+
+<a class="almacen-acceso"
+   href="#almacen-devoluciones">
+    <span class="almacen-acceso-icono">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-history"></use>
+        </svg>
+    </span>
+    <strong>Devoluciones</strong>
+    <span>Control de materiales devueltos.</span>
+    <span class="almacen-acceso-enlace">
+        Registrar devolución &rarr;
+    </span>
+</a>
+
+
+<a class="almacen-acceso"
+   href="{% url 'reporte_movimientos' %}">
+    <span class="almacen-acceso-icono">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-activity"></use>
+        </svg>
+    </span>
+    <strong>Reportes</strong>
+    <span>Movimientos, filtros y exportación CSV.</span>
+    <span class="almacen-acceso-enlace">
+        Ver reportes &rarr;
+    </span>
+</a>
+
+    </nav>
+
+
 <section class="tarjeta seccion">
         <h2>Registrar producto nuevo</h2>
         <form method="POST">
@@ -85,7 +165,7 @@
         </form>
     </section>
 
-    <section class="tarjeta seccion">
+    <section id="almacen-salidas" class="tarjeta seccion">
         <h2>Registrar salida a técnicos</h2>
         <p>
             Registra la entrega de equipos y materiales
@@ -125,7 +205,7 @@
         </form>
     </section>
 
-    <section class="tarjeta seccion">
+    <section id="almacen-devoluciones" class="tarjeta seccion">
         <h2>Registrar devolución de materiales</h2>
         <p>
             Registra los equipos y materiales que un técnico
@@ -149,7 +229,7 @@
         </form>
     </section>
 
-    <section class="tarjeta seccion">
+    <section id="almacen-stock" class="tarjeta seccion">
         <h2>Consulta de stock disponible</h2>
         <div class="tabla-contenedor">
             <table>
@@ -235,6 +315,6 @@
         </div>
     </section>
 
-    <p><a href="{% url 'logout' %}">Cerrar sesión</a></p>
+
 </div>
 {% endblock %}

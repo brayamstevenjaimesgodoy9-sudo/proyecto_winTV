@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import DatabaseError
-from django.http import HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed
 from django.shortcuts import render
 
 from .forms import ReporteMovimientosForm
@@ -24,20 +24,6 @@ logger = logging.getLogger(__name__)
 @login_required
 def reporte_movimientos(request):
     """Consulta paginada de movimientos de Almacén."""
-
-    usuario = request.user
-
-    autorizado = (
-        usuario.is_superuser
-        or usuario.groups.filter(
-            name__in=["ADMINISTRADOR", "ALMACEN"]
-        ).exists()
-    )
-
-    if not autorizado:
-        return HttpResponseForbidden(
-            "No tienes permisos para consultar reportes de almacén."
-        )
 
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])

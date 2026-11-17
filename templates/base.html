@@ -11,11 +11,12 @@
 
     <link rel="stylesheet"
           href="{% static 'css/wintv.css' %}">
+    <link rel="stylesheet" href="{% static 'css/wintv-enterprise.css' %}">
 </head>
 
 <body>
 
-<div class="app">
+<div class="app wintv-enterprise">
 
     <!-- ===================================
          MENU LATERAL WINTV
@@ -38,19 +39,27 @@
 
         <!-- MENU DINAMICO SEGUN ROL -->
         <nav class="menu" aria-label="Menú principal">
-
             {% for opcion in menu_wintv %}
+                {% ifchanged opcion.grupo %}
+                    <div class="wintv-nav-seccion">
+                        {{ opcion.grupo }}
+                    </div>
+                {% endifchanged %}
 
-                <a href="{{ opcion.url }}">
-                    {{ opcion.nombre }}
+                <a href="{{ opcion.url }}"
+                   {% if request.path == opcion.url %}
+                       aria-current="page"
+                   {% endif %}>
+                    <svg class="wintv-nav-icon"
+                         viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-{{ opcion.icono }}"></use>
+                    </svg>
+                    <span>{{ opcion.nombre }}</span>
                 </a>
-
             {% empty %}
-
-                <a href="/">🏠 Inicio</a>
-
+                <a href="/">Inicio</a>
             {% endfor %}
-
         </nav>
 
         <!-- ===================================
@@ -83,7 +92,7 @@
     <div class="principal">
 
         <!-- BARRA SUPERIOR -->
-        <header class="barra-superior">
+        <header class="barra-superior wintv-topbar">
 
             <div>
                 <strong>Panel de gestión</strong>
@@ -93,19 +102,49 @@
                 </span>
             </div>
 
-            <!-- USUARIO ACTUAL -->
-            <div class="usuario">
-
+            <!-- PERFIL Y CIERRE DE SESIÓN -->
+            <div class="wintv-cuenta">
                 {% if user.is_authenticated %}
 
-                    👤 {{ user.username }}
+                    <div class="wintv-perfil">
+                        <span class="wintv-avatar" aria-hidden="true">
+                            {{ user.username|first|upper }}
+                        </span>
+
+                        <div class="wintv-perfil-datos">
+                            <strong>{{ user.username }}</strong>
+                            <small>Sesión iniciada</small>
+                        </div>
+                    </div>
+
+                    <form method="post"
+                          action="{% url 'logout' %}"
+                          class="wintv-logout-form">
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="wintv-logout-btn">
+                            <svg viewBox="0 0 24 24"
+                                 width="17"
+                                 height="17"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="1.8"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 aria-hidden="true">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5
+                                         a2 2 0 0 1 2-2h4"/>
+                                <path d="m16 17 5-5-5-5"/>
+                                <path d="M21 12H9"/>
+                            </svg>
+                            Cerrar sesión
+                        </button>
+                    </form>
 
                 {% else %}
-
-                    Invitado
-
+                    <span class="wintv-invitado">Invitado</span>
                 {% endif %}
-
             </div>
 
         </header>

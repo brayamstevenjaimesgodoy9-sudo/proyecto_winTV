@@ -1,0 +1,422 @@
+/* ==================================================
+   WINTV ENTERPRISE | MÓDULO ALMACÉN
+   Diseño exclusivo: no afecta otros módulos
+   ================================================== */
+
+.almacen-enterprise {
+    --ae-azul: #102a43;
+    --ae-celeste: #18a8e8;
+    --ae-naranja: #f89828;
+    --ae-borde: #e1e9f1;
+    --ae-texto: #21354b;
+    max-width: 1320px;
+    margin: 0 auto;
+}
+
+/* CABECERA DEL MÓDULO */
+
+.almacen-enterprise .almacen-cabecera {
+    padding: 8px 0 5px;
+    margin-bottom: 27px;
+}
+
+.almacen-enterprise .almacen-etiqueta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #0b6486;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 1.5px;
+}
+
+.almacen-enterprise .almacen-etiqueta::before {
+    content: "";
+    width: 20px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--ae-celeste);
+}
+
+.almacen-enterprise .almacen-cabecera h1 {
+    margin: 13px 0 10px;
+    color: var(--ae-azul);
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 750;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+}
+
+.almacen-enterprise .almacen-cabecera p {
+    max-width: 700px;
+    margin: 0;
+    color: #6b7c93;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* CUATRO ACCESOS RÁPIDOS */
+
+.almacen-enterprise .almacen-accesos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.almacen-enterprise .almacen-acceso {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 220px;
+    padding: 21px;
+    border: 1px solid var(--ae-borde);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ae-texto);
+    text-decoration: none;
+    box-shadow: 0 4px 18px rgba(16, 42, 67, .045);
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+}
+
+.almacen-enterprise .almacen-acceso:hover {
+    border-color: #a4d5e9;
+    box-shadow: 0 9px 26px rgba(16, 42, 67, .10);
+    transform: translateY(-2px);
+}
+
+.almacen-enterprise .almacen-acceso:focus-visible {
+    outline: 3px solid #0b6486;
+    outline-offset: 3px;
+}
+
+/* ICONOGRAFÍA */
+
+.almacen-enterprise .almacen-acceso-icono {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 22px;
+    border-radius: 11px;
+    background: #e6f5fc;
+    color: #0b6486;
+}
+
+.almacen-enterprise .almacen-acceso-icono svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.almacen-enterprise .almacen-acceso:nth-child(2)
+.almacen-acceso-icono {
+    background: #e8effc;
+    color: #365fa1;
+}
+
+.almacen-enterprise .almacen-acceso:nth-child(3)
+.almacen-acceso-icono {
+    background: #e7f6ef;
+    color: #308268;
+}
+
+.almacen-enterprise .almacen-acceso:nth-child(4)
+.almacen-acceso-icono {
+    background: #fff0dc;
+    color: #975200;
+}
+
+/* TEXTO Y ENLACE DE LAS TARJETAS */
+
+.almacen-enterprise .almacen-acceso strong {
+    display: block;
+    color: #19344e;
+    font-size: 15px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+
+.almacen-enterprise .almacen-acceso > span:nth-of-type(2) {
+    display: block;
+    flex: 1;
+    margin: 9px 0 20px;
+    color: #718397;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.almacen-enterprise .almacen-acceso-enlace {
+    display: block;
+    padding-top: 13px;
+    border-top: 1px solid #ecf0f5;
+    color: #0b6486;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* NAVEGACIÓN DENTRO DE ALMACÉN */
+
+.almacen-enterprise section[id] {
+    scroll-margin-top: 24px;
+}
+
+/* ADAPTACIÓN RESPONSIVA */
+
+@media (max-width: 1250px) {
+    .almacen-enterprise .almacen-accesos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .almacen-enterprise .almacen-accesos {
+        grid-template-columns: 1fr;
+    }
+
+    .almacen-enterprise .almacen-acceso {
+        min-height: 180px;
+    }
+
+    .almacen-enterprise .almacen-cabecera h1 {
+        font-size: 26px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .almacen-enterprise .almacen-acceso {
+        transition: none;
+    }
+
+    .almacen-enterprise .almacen-acceso:hover {
+        transform: none;
+    }
+}
+
+/* WINTV-ALMACEN-FORMULARIOS-V1 */
+
+/* Secciones de trabajo */
+.almacen-enterprise > .tarjeta {
+    margin-bottom: 24px;
+    padding: 27px 30px;
+    border: 1px solid #e0e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(16,42,67,.045);
+}
+
+.almacen-enterprise .tarjeta h2 {
+    margin: 0 0 17px;
+    color: #102a43;
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -.35px;
+}
+
+.almacen-enterprise .tarjeta h3,
+.almacen-enterprise .salida-detalle h4 {
+    color: #203b55;
+    font-weight: 700;
+}
+
+.almacen-enterprise .tarjeta > p {
+    color: #6b7c93;
+    line-height: 1.7;
+    margin-bottom: 21px;
+}
+
+/* Formularios */
+.almacen-enterprise form > p,
+.almacen-enterprise .salida-detalle p {
+    margin-bottom: 18px;
+}
+
+.almacen-enterprise form label {
+    color: #334b64;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.almacen-enterprise form input,
+.almacen-enterprise form select,
+.almacen-enterprise form textarea {
+    min-height: 43px;
+    padding: 11px 13px;
+    border: 1px solid #cfdae5;
+    border-radius: 9px;
+    background: #fff;
+    color: #21354b;
+    font: inherit;
+    transition: border-color .16s, box-shadow .16s;
+}
+
+.almacen-enterprise form textarea {
+    min-height: 95px;
+    resize: vertical;
+}
+
+.almacen-enterprise form input:focus,
+.almacen-enterprise form select:focus,
+.almacen-enterprise form textarea:focus {
+    outline: none;
+    border-color: #0b6486;
+    box-shadow: 0 0 0 3px rgba(24,168,232,.16);
+}
+
+.almacen-enterprise form input:disabled,
+.almacen-enterprise form select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+/* Acciones principales */
+.almacen-enterprise button.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 43px;
+    padding: 11px 19px;
+    border: 1px solid #0b6486;
+    border-radius: 9px;
+    background: #0b6486;
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.almacen-enterprise button.btn:hover {
+    background: #084e69;
+    border-color: #084e69;
+    color: #ffffff;
+}
+
+.almacen-enterprise button.btn:focus-visible {
+    outline: 3px solid #18a8e8;
+    outline-offset: 3px;
+}
+
+/* Productos de una salida */
+.almacen-enterprise .salida-detalles {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit, minmax(min(100%, 260px), 1fr)
+    );
+    gap: 16px;
+}
+
+.almacen-enterprise .salida-detalle {
+    padding: 20px;
+    border: 1px solid #dfe8f0;
+    border-radius: 12px;
+    background: #f8fbfd;
+}
+
+/* Tablas */
+.almacen-enterprise .tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e3eaf1;
+    border-radius: 10px;
+}
+
+.almacen-enterprise .tabla-contenedor table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+}
+
+.almacen-enterprise .tabla-contenedor th {
+    padding: 15px 14px;
+    background: #edf4f9;
+    color: #29445e;
+    border-bottom: 1px solid #d9e4ee;
+    font-size: 11px;
+    font-weight: 750;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.almacen-enterprise .tabla-contenedor td {
+    padding: 14px;
+    color: #40546a;
+    border-bottom: 1px solid #edf1f5;
+    font-size: 12px;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.almacen-enterprise .tabla-contenedor tbody tr:hover {
+    background: #f5faff;
+}
+
+.almacen-enterprise .tabla-contenedor tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Estado de existencias */
+.almacen-enterprise .stock,
+.almacen-enterprise .sin-stock,
+.almacen-enterprise .en-minimo {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.almacen-enterprise .stock {
+    background: #e6f5ec;
+    color: #166534;
+}
+
+.almacen-enterprise .sin-stock {
+    background: #fef0ed;
+    color: #b42318;
+}
+
+.almacen-enterprise .en-minimo {
+    background: #fff4df;
+    color: #925400;
+}
+
+/* Validaciones */
+.almacen-enterprise .errorlist {
+    color: #b42318;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 700px) {
+    .almacen-enterprise > .tarjeta {
+        padding: 19px 16px;
+        border-radius: 11px;
+    }
+
+    .almacen-enterprise .tarjeta h2 {
+        font-size: 17px;
+    }
+
+    .almacen-enterprise button.btn {
+        max-width: 100%;
+        white-space: normal;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .almacen-enterprise form input,
+    .almacen-enterprise form select,
+    .almacen-enterprise form textarea {
+        transition: none;
+    }
+}
