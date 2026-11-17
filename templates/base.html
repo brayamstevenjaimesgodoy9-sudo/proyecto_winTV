@@ -9,62 +9,291 @@
 
     <title>{% block titulo %}WinTV{% endblock %}</title>
 
+    <!-- ESTILOS ORIGINALES DE WINTV -->
     <link rel="stylesheet"
           href="{% static 'css/wintv.css' %}">
-    <link rel="stylesheet" href="{% static 'css/wintv-enterprise.css' %}">
+
+    <link rel="stylesheet"
+          href="{% static 'css/wintv-enterprise.css' %}">
+
+    <!-- =====================================
+         MENU DESPLEGABLE DE INCIDENCIAS
+         Solo cambios visuales
+    ====================================== -->
+    <style>
+        .wintv-nav-grupo {
+            width: 100%;
+            margin: 3px 0;
+            color: #e8f1ff;
+        }
+
+        .wintv-nav-grupo > summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 9px;
+            color: #e8f1ff;
+            font: inherit;
+            font-size: 14px;
+            line-height: 1.4;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .wintv-nav-grupo > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .wintv-nav-grupo > summary:hover,
+        .wintv-nav-grupo > summary:focus-visible {
+            background: rgba(255, 255, 255, 0.10);
+        }
+
+        .wintv-nav-grupo > summary:focus-visible {
+            outline: 2px solid #8bbcff;
+            outline-offset: 2px;
+        }
+
+        .wintv-nav-grupo[open] > summary {
+            background: rgba(255, 255, 255, 0.08);
+            font-weight: 600;
+        }
+
+        .wintv-nav-grupo > summary .wintv-nav-icon {
+            flex-shrink: 0;
+            width: 19px;
+            height: 19px;
+        }
+
+        .wintv-nav-flecha {
+            width: 15px;
+            height: 15px;
+            margin-left: auto;
+            flex-shrink: 0;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+
+        .wintv-nav-grupo[open] .wintv-nav-flecha {
+            transform: rotate(90deg);
+        }
+
+        .wintv-nav-submenu {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin: 4px 0 8px 24px;
+            padding-left: 10px;
+            border-left: 1px solid rgba(255,255,255,0.16);
+        }
+
+        .menu .wintv-nav-submenu > a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            margin: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #dbe8fa;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.4;
+            transition: background 0.2s ease;
+        }
+
+        .menu .wintv-nav-submenu > a:hover {
+            color: #ffffff;
+            background: rgba(255,255,255,0.10);
+        }
+
+        .menu .wintv-nav-submenu > a[aria-current="page"] {
+            color: #ffffff;
+            background: rgba(99,162,255,0.22);
+            font-weight: 600;
+        }
+
+        .wintv-nav-submenu .wintv-nav-icon {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .wintv-nav-submenu span {
+            min-width: 0;
+            overflow-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .wintv-nav-grupo > summary {
+                padding: 11px 12px;
+            }
+
+            .wintv-nav-submenu {
+                margin-left: 15px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="app wintv-enterprise">
 
-    <!-- ===================================
+    <!-- =====================================
          MENU LATERAL WINTV
-    =================================== -->
+    ====================================== -->
     <aside class="sidebar">
 
         <!-- MARCA -->
         <div class="marca">
+
             <img
-    src="{% static 'img/logo_wintv.png' %}"
-    alt="Logo oficial de WinTV"
-    class="marca-logo"
->
+                src="{% static 'img/logo_wintv.png' %}"
+                alt="Logo oficial de WinTV"
+                class="marca-logo"
+            >
 
             <div>
                 <strong>WinTV</strong>
                 <small>Gestión comercial</small>
             </div>
+
         </div>
 
-        <!-- MENU DINAMICO SEGUN ROL -->
+        <!-- =====================================
+             MENU DINAMICO SEGUN ROLES
+        ====================================== -->
         <nav class="menu" aria-label="Menú principal">
+
             {% for opcion in menu_wintv %}
+
+                <!-- TITULO DE SECCION -->
                 {% ifchanged opcion.grupo %}
+
                     <div class="wintv-nav-seccion">
                         {{ opcion.grupo }}
                     </div>
+
                 {% endifchanged %}
 
-                <a href="{{ opcion.url }}"
-                   {% if request.path == opcion.url %}
-                       aria-current="page"
-                   {% endif %}>
-                    <svg class="wintv-nav-icon"
-                         viewBox="0 0 24 24"
-                         aria-hidden="true">
-                        <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-{{ opcion.icono }}"></use>
-                    </svg>
-                    <span>{{ opcion.nombre }}</span>
-                </a>
+                <!-- =================================
+                     OPCIONES DESPLEGABLES
+                ================================== -->
+                {% if opcion.tipo == "grupo" %}
+
+                    <details class="wintv-nav-grupo"
+                        {% for subopcion in opcion.items %}
+                            {% if request.path == subopcion.url %}
+                                open
+                            {% endif %}
+                        {% endfor %}
+                    >
+
+                        <summary>
+
+                            <svg
+                                class="wintv-nav-icon"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-{{ opcion.icono }}"></use>
+                            </svg>
+
+                            <span>
+                                {{ opcion.nombre }}
+                            </span>
+
+                            <svg
+                                class="wintv-nav-flecha"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+
+                        </summary>
+
+                        <!-- SUBOPCIONES -->
+                        <div class="wintv-nav-submenu">
+
+                            {% for subopcion in opcion.items %}
+
+                                <a
+                                    href="{{ subopcion.url }}"
+                                    {% if request.path == subopcion.url %}
+                                        aria-current="page"
+                                    {% endif %}
+                                >
+
+                                    <svg
+                                        class="wintv-nav-icon"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-{{ subopcion.icono }}"></use>
+                                    </svg>
+
+                                    <span>
+                                        {{ subopcion.nombre }}
+                                    </span>
+
+                                </a>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </details>
+
+                {% else %}
+
+                    <!-- =================================
+                         OPCIONES NORMALES
+                    ================================== -->
+                    <a
+                        href="{{ opcion.url }}"
+                        {% if request.path == opcion.url %}
+                            aria-current="page"
+                        {% endif %}
+                    >
+
+                        <svg
+                            class="wintv-nav-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <use href="{% static 'img/wintv-nav-icons.svg' %}#wintv-i-{{ opcion.icono }}"></use>
+                        </svg>
+
+                        <span>
+                            {{ opcion.nombre }}
+                        </span>
+
+                    </a>
+
+                {% endif %}
+
             {% empty %}
+
                 <a href="/">Inicio</a>
+
             {% endfor %}
+
         </nav>
 
-        <!-- ===================================
-             INFORMACION DE ROLES DEL USUARIO
-        =================================== -->
+        <!-- =====================================
+             INFORMACION DE ROLES
+        ====================================== -->
         {% if user.is_authenticated %}
 
             <div class="roles-usuario">
@@ -86,9 +315,9 @@
 
     </aside>
 
-    <!-- ===================================
+    <!-- =====================================
          CONTENIDO PRINCIPAL
-    =================================== -->
+    ====================================== -->
     <div class="principal">
 
         <!-- BARRA SUPERIOR -->
@@ -102,64 +331,98 @@
                 </span>
             </div>
 
-            <!-- PERFIL Y CIERRE DE SESIÓN -->
+            <!-- =================================
+                 PERFIL Y CIERRE DE SESION
+            ================================== -->
             <div class="wintv-cuenta">
+
                 {% if user.is_authenticated %}
 
                     <div class="wintv-perfil">
-                        <span class="wintv-avatar" aria-hidden="true">
+
+                        <span
+                            class="wintv-avatar"
+                            aria-hidden="true"
+                        >
                             {{ user.username|first|upper }}
                         </span>
 
                         <div class="wintv-perfil-datos">
-                            <strong>{{ user.username }}</strong>
-                            <small>Sesión iniciada</small>
+
+                            <strong>
+                                {{ user.username }}
+                            </strong>
+
+                            <small>
+                                Sesión iniciada
+                            </small>
+
                         </div>
+
                     </div>
 
-                    <form method="post"
-                          action="{% url 'logout' %}"
-                          class="wintv-logout-form">
+                    <!-- CERRAR SESION -->
+                    <form
+                        method="post"
+                        action="{% url 'logout' %}"
+                        class="wintv-logout-form"
+                    >
                         {% csrf_token %}
 
-                        <button type="submit"
-                                class="wintv-logout-btn">
-                            <svg viewBox="0 0 24 24"
-                                 width="17"
-                                 height="17"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 stroke-width="1.8"
-                                 stroke-linecap="round"
-                                 stroke-linejoin="round"
-                                 aria-hidden="true">
+                        <button
+                            type="submit"
+                            class="wintv-logout-btn"
+                        >
+
+                            <svg
+                                viewBox="0 0 24 24"
+                                width="17"
+                                height="17"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5
                                          a2 2 0 0 1 2-2h4"/>
                                 <path d="m16 17 5-5-5-5"/>
                                 <path d="M21 12H9"/>
                             </svg>
+
                             Cerrar sesión
+
                         </button>
+
                     </form>
 
                 {% else %}
-                    <span class="wintv-invitado">Invitado</span>
+
+                    <span class="wintv-invitado">
+                        Invitado
+                    </span>
+
                 {% endif %}
+
             </div>
 
         </header>
 
-        <!-- ===================================
+        <!-- =====================================
              CONTENIDO DE LAS PAGINAS
-        =================================== -->
+        ====================================== -->
         <main class="contenido">
 
-            <!-- MENSAJES DE DJANGO -->
+            <!-- MENSAJES DJANGO -->
             {% if messages %}
 
                 {% for message in messages %}
 
-                    <div class="mensaje" role="status">
+                    <div
+                        class="mensaje"
+                        role="status"
+                    >
                         {{ message }}
                     </div>
 
