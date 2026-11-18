@@ -1,3 +1,4 @@
+
 from functools import wraps
 
 from django.contrib import messages
@@ -145,6 +146,7 @@ def editar_usuario(request, usuario_id):
         }
     )
 
+
 def iniciar_sesion(request):
     siguiente = request.POST.get('next') or request.GET.get('next')
 
@@ -182,6 +184,17 @@ def iniciar_sesion(request):
             ).exists():
                 return redirect('servicios:contrato_lista')
 
+            # ==========================================
+            # CORRECCION: INICIO DE SESION DEL TECNICO
+            # ==========================================
+            # Permite que los usuarios con rol TECNICO
+            # accedan directamente a Gestion de incidencias.
+
+            if usuario.groups.filter(
+                name__iexact="TECNICO"
+            ).exists():
+                return redirect('/incidencias/listar/')
+
             return HttpResponseForbidden(
                 "Tu usuario no tiene una página de inicio asignada."
             )
@@ -196,6 +209,7 @@ def iniciar_sesion(request):
         'usuarios/login.html',
         {'next': siguiente}
     )
+
 
 def cerrar_sesion(request):
     logout(request)
