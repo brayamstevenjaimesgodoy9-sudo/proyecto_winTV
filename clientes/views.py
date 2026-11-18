@@ -15,6 +15,22 @@ from .models import Cliente
 
 
 # ==========================================
+# PERMISOS PARA GESTIONAR CLIENTES
+# ==========================================
+
+def puede_gestionar_clientes(usuario):
+    if not usuario.is_authenticated:
+        return False
+
+    return (
+        usuario.is_superuser
+        or usuario.groups.filter(
+            name__in=["ADMINISTRADOR", "VENDEDOR"]
+        ).exists()
+    )
+
+
+# ==========================================
 # HU-01: REGISTRAR CLIENTES
 # ==========================================
 
@@ -42,7 +58,6 @@ def registrar_cliente(request):
                     "No se pudo registrar el cliente. "
                     "Verifique que el documento no esté duplicado."
                 )
-
     else:
         formulario = ClienteForm()
 
@@ -50,7 +65,8 @@ def registrar_cliente(request):
         request,
         "clientes/registrar.html",
         {
-            "formulario": formulario
+            "formulario": formulario,
+            "modo_edicion": False,
         }
     )
 
@@ -64,7 +80,7 @@ def buscar_clientes(request):
 
     busqueda = request.GET.get("q", "").strip()
 
-    # Mostrar solamente los clientes activos
+    # Mostrar únicamente clientes activos
     clientes = Cliente.objects.filter(activo=1)
 
     if busqueda:
@@ -76,13 +92,11 @@ def buscar_clientes(request):
             | Q(numero_documento__icontains=busqueda)
         )
 
-        # Permitir buscar también por código
         if busqueda.isdigit():
             filtros |= Q(id_cliente=int(busqueda))
 
         clientes = clientes.filter(filtros)
 
-    # Ordenar del más reciente al más antiguo
     clientes = clientes.order_by("-id_cliente")[:50]
 
     return render(
@@ -91,6 +105,9 @@ def buscar_clientes(request):
         {
             "clientes": clientes,
             "busqueda": busqueda,
+            "puede_gestionar": puede_gestionar_clientes(
+                request.user
+            ),
         }
     )
 
@@ -103,30 +120,17 @@ def buscar_clientes(request):
 @login_required
 def historial_cliente(request, cliente_id):
 
-    # VALIDAR PERMISOS DEL USUARIO
-    # Solo ADMINISTRADOR, VENDEDOR o superusuario.
-    usuario = request.user
-
-    autorizado = (
-        usuario.is_superuser
-        or usuario.groups.filter(
-            name__in=["ADMINISTRADOR", "VENDEDOR"]
-        ).exists()
-    )
-
-    if not autorizado:
+    if not puede_gestionar_clientes(request.user):
         return HttpResponseForbidden(
             "No tienes permisos para consultar "
             "el historial de clientes."
         )
 
-    # OBTENER EL CLIENTE SOLICITADO
     cliente = get_object_or_404(
         Cliente,
         pk=cliente_id,
     )
 
-    # CONSULTAR LOS CONTRATOS DEL CLIENTE
     contratos = list(
         Contrato.objects.filter(
             cliente_id=cliente.pk
@@ -135,13 +139,11 @@ def historial_cliente(request, cliente_id):
         .order_by("-fecha_inicio", "-id_contrato")
     )
 
-    # OBTENER IDENTIFICADORES DE CONTRATOS
     ids_contratos = [
         contrato.pk
         for contrato in contratos
     ]
 
-    # CONSULTAR LAS INCIDENCIAS DEL CLIENTE
     incidencias = list(
         Incidencia.objects.filter(
             id_cliente=cliente.pk
@@ -150,7 +152,6 @@ def historial_cliente(request, cliente_id):
         .order_by("-fecha_reporte", "-id_incidencia")
     )
 
-    # CONSULTAR ÓRDENES DE TRABAJO
     ordenes = list(
         OrdenTrabajo.objects.filter(
             id_contrato__in=ids_contratos
@@ -166,5 +167,105 @@ def historial_cliente(request, cliente_id):
             "contratos": contratos,
             "incidencias": incidencias,
             "ordenes": ordenes,
+        }
+    )
+
+
+# ==========================================
+# EDITAR CLIENTE
+# ==========================================
+
+@login_required
+def editar_cliente(request, cliente_id):
+
+    if not puede_gestionar_clientes(request.user):
+        return HttpResponseForbidden(
+            "No tienes permisos para editar clientes."
+        )
+
+    cliente = get_object_or_404(
+        Cliente,
+        pk=cliente_id,
+        activo=1,
+    )
+
+    if request.method == "POST":
+
+        formulario = ClienteForm(
+            request.POST,
+            instance=cliente,
+        )
+
+        if formulario.is_valid():
+            try:
+                with transaction.atomic():
+                    formulario.save()
+
+                messages.success(
+                    request,
+                    "Cliente actualizado correctamente."
+                )
+
+                return redirect("clientes:buscar")
+
+            except IntegrityError:
+                formulario.add_error(
+                    None,
+                    "No se pudieron guardar los cambios. "
+                    "Verifique que el documento no esté duplicado."
+                )
+
+    else:
+        formulario = ClienteForm(instance=cliente)
+
+    return render(
+        request,
+        "clientes/registrar.html",
+        {
+            "formulario": formulario,
+            "modo_edicion": True,
+            "cliente": cliente,
+        }
+    )
+
+
+# ==========================================
+# ELIMINAR CLIENTE (DESACTIVACIÓN LÓGICA)
+# ==========================================
+
+@login_required
+def eliminar_cliente(request, cliente_id):
+
+    if not puede_gestionar_clientes(request.user):
+        return HttpResponseForbidden(
+            "No tienes permisos para eliminar clientes."
+        )
+
+    cliente = get_object_or_404(
+        Cliente,
+        pk=cliente_id,
+        activo=1,
+    )
+
+    # Nunca eliminar mediante GET
+    if request.method == "POST":
+
+        with transaction.atomic():
+            cliente.activo = 0
+            cliente.save(update_fields=["activo"])
+
+        messages.success(
+            request,
+            "Cliente desactivado correctamente. "
+            "Su información e historial se conservan."
+        )
+
+        return redirect("clientes:buscar")
+
+    return render(
+        request,
+        "clientes/confirmar_eliminar.html",
+        {
+            "cliente": cliente,
         }
     )
