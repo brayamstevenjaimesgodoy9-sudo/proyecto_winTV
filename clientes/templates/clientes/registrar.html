@@ -1,7 +1,13 @@
 
 {% extends "base.html" %}
 
-{% block titulo %}Registrar cliente | WinTV{% endblock %}
+{% block titulo %}
+    {% if modo_edicion %}
+        Editar cliente | WinTV
+    {% else %}
+        Registrar cliente | WinTV
+    {% endif %}
+{% endblock %}
 
 {% block contenido %}
 
@@ -10,21 +16,35 @@
     <!-- ENCABEZADO -->
     <header class="wintv-cliente-cabecera">
         <div>
-            <h1>Gestión de clientes</h1>
+
+            <h1>
+                {% if modo_edicion %}
+                    Editar cliente
+                {% else %}
+                    Gestión de clientes
+                {% endif %}
+            </h1>
+
             <p>
-                Registra y consulta clientes de manera
-                rápida y sencilla.
+                {% if modo_edicion %}
+                    Actualiza la información del cliente
+                    seleccionado en WinTV.
+                {% else %}
+                    Registra y consulta clientes de manera
+                    rápida y sencilla.
+                {% endif %}
             </p>
+
         </div>
     </header>
 
-    <!-- NAVEGACIÓN -->
+    <!-- NAVEGACION -->
     <nav class="wintv-cliente-navegacion"
          aria-label="Gestión de clientes">
 
         <a href="{% url 'clientes:registrar' %}"
-           class="wintv-cliente-pestana activa"
-           aria-current="page">
+           class="wintv-cliente-pestana {% if not modo_edicion %}activa{% endif %}"
+           {% if not modo_edicion %}aria-current="page"{% endif %}>
             Registrar cliente
         </a>
 
@@ -38,12 +58,30 @@
     <!-- FORMULARIO -->
     <section class="wintv-cliente-seccion">
 
-        <h2>Datos del nuevo cliente</h2>
+        <h2>
+            {% if modo_edicion %}
+                Editar datos del cliente
+            {% else %}
+                Datos del nuevo cliente
+            {% endif %}
+        </h2>
 
         <p class="wintv-cliente-descripcion">
-            Completa la información para registrar
-            un nuevo cliente en WinTV.
+            {% if modo_edicion %}
+                Modifica los datos necesarios y guarda
+                los cambios realizados.
+            {% else %}
+                Completa la información para registrar
+                un nuevo cliente en WinTV.
+            {% endif %}
         </p>
+
+        {% if modo_edicion and cliente %}
+            <p class="wintv-cliente-descripcion">
+                <strong>Código del cliente:</strong>
+                {{ cliente.id_cliente }}
+            </p>
+        {% endif %}
 
         <form method="POST" novalidate>
             {% csrf_token %}
@@ -91,10 +129,28 @@
             <!-- BOTONES -->
             <div class="wintv-cliente-acciones">
 
-                <button type="submit"
-                        class="wintv-cliente-boton">
-                    Guardar cliente
+                <button
+                    type="submit"
+                    class="wintv-cliente-boton">
+
+                    {% if modo_edicion %}
+                        Guardar cambios
+                    {% else %}
+                        Guardar cliente
+                    {% endif %}
+
                 </button>
+
+                {% if modo_edicion %}
+
+                    <a
+                        href="{% url 'clientes:buscar' %}"
+                        class="wintv-cliente-pestana"
+                        style="text-decoration: none;">
+                        Cancelar
+                    </a>
+
+                {% endif %}
 
             </div>
 
@@ -104,7 +160,7 @@
 
 </div>
 
-<!-- CAMPOS DINÁMICOS SEGÚN DOCUMENTO -->
+<!-- CAMPOS DINAMICOS SEGUN DOCUMENTO -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 

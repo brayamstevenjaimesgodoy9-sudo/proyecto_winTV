@@ -1,0 +1,86 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}
+Eliminar cliente | WinTV
+{% endblock %}
+
+{% block contenido %}
+
+<div class="tarjeta wintv-cliente-registro">
+
+    <!-- ENCABEZADO -->
+    <header class="wintv-cliente-cabecera">
+
+        <h1>Eliminar cliente</h1>
+
+        <p>
+            Confirma la desactivación del cliente
+            seleccionado.
+        </p>
+
+    </header>
+
+    <!-- CONFIRMACION -->
+    <section class="wintv-cliente-seccion">
+
+        <h2>Confirmar eliminación</h2>
+
+        <p>
+            ¿Estás seguro de que deseas desactivar
+            al siguiente cliente?
+        </p>
+
+        <p>
+            <strong>Cliente:</strong>
+            {{ cliente }}
+        </p>
+
+        <p>
+            <strong>Código:</strong>
+            {{ cliente.id_cliente }}
+        </p>
+
+        <p>
+            <strong>Documento:</strong>
+            {{ cliente.tipo_documento }}
+            {{ cliente.numero_documento }}
+        </p>
+
+        <p>
+            El cliente dejará de aparecer en las búsquedas
+            de clientes activos. Su información, contratos,
+            incidencias e historial se conservarán.
+        </p>
+
+        <!-- FORMULARIO SEGURO CON POST -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="wintv-cliente-acciones">
+
+                <button
+                    type="submit"
+                    class="wintv-cliente-boton"
+                    style="background-color: #b42318;"
+                >
+                    Confirmar eliminación
+                </button>
+
+                <a
+                    href="{% url 'clientes:buscar' %}"
+                    class="wintv-cliente-pestana"
+                    style="text-decoration: none;"
+                >
+                    Cancelar
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

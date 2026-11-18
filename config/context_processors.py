@@ -25,20 +25,16 @@ def menu_wintv(request):
         # ==========================================
         # MODULO DE CLIENTES
         # ==========================================
+        # La búsqueda de clientes se mantiene dentro
+        # de la pantalla Registrar clientes.
         if roles.intersection({
             "ADMINISTRADOR",
             "VENDEDOR",
         }):
-            menu.extend([
-                {
-                    "nombre": "Registrar clientes",
-                    "url": "/clientes/registrar/",
-                },
-                {
-                    "nombre": "Buscar clientes",
-                    "url": "/clientes/buscar/",
-                },
-            ])
+            menu.append({
+                "nombre": "Registrar clientes",
+                "url": "/clientes/registrar/",
+            })
 
         # ==========================================
         # MODULO ADMINISTRATIVO
@@ -67,7 +63,7 @@ def menu_wintv(request):
                 },
             ])
 
-        # HU-12: Reportes de almacen
+        # HU-12: Reportes de almacén
         # Disponible para usuarios autenticados.
         menu.append({
             "nombre": "Reportes de almacén",
@@ -107,8 +103,7 @@ def menu_wintv(request):
             "TECNICO",
         }):
 
-            # GRUPO DESPLEGABLE:
-            # REGISTRAR, CONSULTAR E HISTORIAL
+            # GRUPO DESPLEGABLE DE INCIDENCIAS
             menu.append({
                 "tipo": "grupo",
                 "nombre": "Incidencias",
@@ -135,7 +130,7 @@ def menu_wintv(request):
                 ],
             })
 
-            # LAS DEMAS FUNCIONES SE CONSERVAN
+            # LAS DEMÁS FUNCIONES SE CONSERVAN
             menu.extend([
                 {
                     "nombre": "Asignar órdenes de trabajo",
@@ -170,9 +165,6 @@ def menu_wintv(request):
         # CLIENTES
         "/clientes/registrar/": (
             "GESTIÓN COMERCIAL", "user-plus", 10
-        ),
-        "/clientes/buscar/": (
-            "GESTIÓN COMERCIAL", "users", 11
         ),
 
         # CONTRATOS
